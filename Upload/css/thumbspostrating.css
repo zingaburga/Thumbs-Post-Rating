@@ -1,0 +1,43 @@
+/**
+ * Thumbs Post Rating 1.2 by TY Yew
+ * thumbspostrating.css
+ */
+
+.tpr_box
+{
+    border: 1px solid #9A9A9A;
+    background-color: #fff;
+}
+.tu_stat
+{
+    color: #080;
+    font-size: small;
+}
+.td_stat
+{
+    color: red;
+    font-size: small;
+}
+.tpr_thumb
+{
+    display: block;
+    width: 15px;
+    height: 16px;
+}
+.tu_ru, .tu_nr:hover
+{
+    background: url(../images/tpr_up.png) no-repeat 0 0;
+    background-position: 0 -16px;
+}
+.td_ru, .td_nr
+{
+    background: url(../images/tpr_down.png) no-repeat 0 0;
+}
+.tu_rd, .tu_nr
+{
+    background: url(../images/tpr_up.png) no-repeat 0 0;
+}
+.td_rd, .td_nr:hover {
+    background: url(../images/tpr_down.png) no-repeat 0 0;
+    background-position: 0 -16px;
+}

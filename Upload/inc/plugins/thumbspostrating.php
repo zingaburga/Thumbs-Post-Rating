@@ -57,7 +57,7 @@ function thumbspostrating_info()
 function thumbspostrating_install()
 {
     global $db;
-	$db->query('CREATE TABLE IF NOT EXISTS '.TABLE_PREFIX.'thumbspostrating (
+	$db->write_query('CREATE TABLE IF NOT EXISTS '.TABLE_PREFIX.'thumbspostrating (
 		id INT UNSIGNED NOT NULL AUTO_INCREMENT ,
         thumbsup INT NOT NULL ,
         thumbsdown INT NOT NULL ,
@@ -69,12 +69,12 @@ function thumbspostrating_install()
 
     if( !$db->field_exists("thumbsup","posts") )
     {
-        $db->query('ALTER TABLE '.TABLE_PREFIX.'posts ADD `thumbsup` INT NOT NULL DEFAULT 0');
+        $db->write_query('ALTER TABLE '.TABLE_PREFIX.'posts ADD `thumbsup` INT NOT NULL DEFAULT 0');
     }
 
     if( !$db->field_exists('thumbsdown','posts') )
     {
-        $db->query('ALTER TABLE '.TABLE_PREFIX.'posts ADD `thumbsdown` INT NOT NULL DEFAULT 0');
+        $db->write_query('ALTER TABLE '.TABLE_PREFIX.'posts ADD `thumbsdown` INT NOT NULL DEFAULT 0');
     }
 }
 
@@ -172,16 +172,16 @@ function thumbspostrating_uninstall()
 {
     global $db;
 
-	$db->query('DROP TABLE IF EXISTS '.TABLE_PREFIX.'thumbspostrating');
+	$db->write_query('DROP TABLE IF EXISTS '.TABLE_PREFIX.'thumbspostrating');
  
     if( $db->field_exists('thumbsup','posts') )
     {
-        $db->query('ALTER TABLE '.TABLE_PREFIX.'posts DROP thumbsup');
+        $db->write_query('ALTER TABLE '.TABLE_PREFIX.'posts DROP thumbsup');
     }
 
     if( $db->field_exists('thumbsdown','posts') )
     {
-        $db->query('ALTER TABLE '.TABLE_PREFIX.'posts DROP thumbsdown');
+        $db->write_query('ALTER TABLE '.TABLE_PREFIX.'posts DROP thumbsdown');
     }
 }
 

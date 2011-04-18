@@ -59,7 +59,6 @@ function thumbspostrating_install()
     global $db;
 
     $db->write_query('ALTER TABLE '.TABLE_PREFIX.'posts ADD `thumbsup` INT NOT NULL DEFAULT 0, `thumbsdown` INT NOT NULL DEFAULT 0', true);
-
 	$db->write_query('CREATE TABLE IF NOT EXISTS '.TABLE_PREFIX.'thumbspostrating (
         uid INT NOT NULL ,
         pid INT NOT NULL ,
@@ -150,12 +149,7 @@ function thumbspostrating_deactivate()
 function thumbspostrating_is_installed()
 {
     global $db;
-
-    if( $db->table_exists('thumbspostrating') )
-    {
-        return true;
-    }
-    return false;
+    return (bool) $db->table_exists('thumbspostrating');
 }
 
 // Uninstall function
@@ -171,7 +165,13 @@ function thumbspostrating_uninstall()
 function tpr_box($post)
 {
     global $db, $mybb, $templates, $lang, $tprdsp;
-    $lang->load('thumbspostrating');
+    
+    static $done_init = false;
+	if(!$done_init)
+	{
+		$done_init = true;
+		$lang->load('thumbspostrating');
+	}
 
     $pid = (int) $post['pid'];
     $uid = $mybb->user['uid'];

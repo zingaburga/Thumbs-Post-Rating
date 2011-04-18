@@ -170,6 +170,22 @@ function tpr_box($post)
 	if(!$done_init)
 	{
 		$done_init = true;
+		
+		// Check whether the posts in the forum can be rated
+		if( $mybb->settings['tpr_forums'] != 0 )
+		{
+			$fcr = ;
+			foreach(array_map('trim', explode(',',$mybb->settings['tpr_forums'])) as $fid)
+			{
+				if( ($fid == $post['fid']) )
+				{
+					global $plugins;
+					$plugins->remove_hook('postbit', 'tpr_box');
+					return;
+				}
+			}
+		}
+
 		$lang->load('thumbspostrating');
 	}
 
@@ -177,23 +193,6 @@ function tpr_box($post)
     $uid = $mybb->user['uid'];
     $fid = $post['fid'];
 
-    // Check whether the posts in the forum can be rated
-    $exclude = false;
-
-    if( $mybb->settings['tpr_forums'] != 0 )
-    {
-        $fcr = explode(',',$mybb->settings['tpr_forums']);
-        for( $num=0; $num < count($fcr); $num++ )
-        {
-            if( (trim($fcr[$num]) == $fid) )
-            {
-                $exclude = true;
-            }
-        }
-    }
-
-    if( $exclude == false )
-    {
         // Check whether the user can rate
         $gcr = explode(',',$mybb->settings['tpr_usergroups']);
 
@@ -265,7 +264,6 @@ function tpr_box($post)
 BOX;
 
         $post['tprdsp'] = $box;
-    }
 }
 
 function tpr_action()

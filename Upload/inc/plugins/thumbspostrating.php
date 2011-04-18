@@ -58,13 +58,11 @@ function thumbspostrating_install()
 {
     global $db;
 	$db->write_query('CREATE TABLE IF NOT EXISTS '.TABLE_PREFIX.'thumbspostrating (
-		id INT UNSIGNED NOT NULL AUTO_INCREMENT ,
-        thumbsup INT NOT NULL ,
-        thumbsdown INT NOT NULL ,
         uid INT NOT NULL ,
         pid INT NOT NULL ,
-		PRIMARY KEY ( id )
-		) TYPE = MYISAM ;'
+        rating SMALLINT NOT NULL ,
+		PRIMARY KEY ( uid, pid )
+		) ENGINE = MYISAM ;'
 	);
 
     if( !$db->field_exists("thumbsup","posts") )
@@ -238,7 +236,7 @@ function tpr_box($post)
         //If rated, check whether they rated thumbs up or down
         if( $count == 1 )
         {
-            $rated_result = $db->fetch_array($rated);
+            $rated_result = $db->fetch_field($rated, 'rating');
         }
 
         // Make the thumb
@@ -249,13 +247,13 @@ function tpr_box($post)
             $td_img = '<div class="tpr_thumb td_ru"></div>';
         }
         // for user already rated thumb up
-        elseif( $count == 1 && $rated_result['thumbsup'] == 1 )
+        elseif( $count == 1 && $rated_result == 1 )
         {
             $tu_img = '<div class="tpr_thumb tu_ru"></div>';
             $td_img = '<div class="tpr_thumb td_ru"></div>';
         }
         // for user already rated thumb down
-        elseif( $count == 1 && $rated_result['thumbsdown'] == 1 )
+        elseif( $count == 1 && $rated_result == -1 )
         {
             $tu_img = '<div class="tpr_thumb tu_rd"></div>';
             $td_img = '<div class="tpr_thumb td_rd"></div>';
@@ -323,7 +321,7 @@ function tpr_action()
     if( ($mybb->input['action'] == 'tpr') && ($tu == 1) && ($can_rate == true) )
     {
         $insert_thumbs = array(
-            'thumbsup' => 1,
+            'rating' => 1,
             'uid' => $uid,
             'pid' => $pid
         );
@@ -342,7 +340,7 @@ function tpr_action()
     elseif( ($mybb->input['action'] == 'tpr') && ($td == 1) && ($can_rate == true) )
     {
         $insert_thumbs = array(
-            'thumbsdown' => 1,
+            'rating' => -1,
             'uid' => $uid,
             'pid' => $pid
         );

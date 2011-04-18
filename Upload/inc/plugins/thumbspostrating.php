@@ -57,6 +57,9 @@ function thumbspostrating_info()
 function thumbspostrating_install()
 {
     global $db;
+
+    $db->write_query('ALTER TABLE '.TABLE_PREFIX.'posts ADD `thumbsup` INT NOT NULL DEFAULT 0, `thumbsdown` INT NOT NULL DEFAULT 0', true);
+
 	$db->write_query('CREATE TABLE IF NOT EXISTS '.TABLE_PREFIX.'thumbspostrating (
         uid INT NOT NULL ,
         pid INT NOT NULL ,
@@ -64,16 +67,6 @@ function thumbspostrating_install()
 		PRIMARY KEY ( uid, pid )
 		) ENGINE = MYISAM ;'
 	);
-
-    if( !$db->field_exists("thumbsup","posts") )
-    {
-        $db->write_query('ALTER TABLE '.TABLE_PREFIX.'posts ADD `thumbsup` INT NOT NULL DEFAULT 0');
-    }
-
-    if( !$db->field_exists('thumbsdown','posts') )
-    {
-        $db->write_query('ALTER TABLE '.TABLE_PREFIX.'posts ADD `thumbsdown` INT NOT NULL DEFAULT 0');
-    }
 }
 
 // Activate function
@@ -170,17 +163,8 @@ function thumbspostrating_uninstall()
 {
     global $db;
 
+    $db->write_query('ALTER TABLE '.TABLE_PREFIX.'posts DROP thumbsup, DROP thumbsdown', true);
 	$db->write_query('DROP TABLE IF EXISTS '.TABLE_PREFIX.'thumbspostrating');
- 
-    if( $db->field_exists('thumbsup','posts') )
-    {
-        $db->write_query('ALTER TABLE '.TABLE_PREFIX.'posts DROP thumbsup');
-    }
-
-    if( $db->field_exists('thumbsdown','posts') )
-    {
-        $db->write_query('ALTER TABLE '.TABLE_PREFIX.'posts DROP thumbsdown');
-    }
 }
 
 // Display the RATEBOX

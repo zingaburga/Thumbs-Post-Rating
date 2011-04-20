@@ -260,7 +260,7 @@ function tpr_box($post)
 	// for user who can rate
 	else
 	{
-		$url = $mybb->settings['bburl'].'/xmlhttp.php?action=tpr&amp;pid='.$pid.'&amp;rating=';
+		$url = $mybb->settings['bburl'].'/xmlhttp.php?action=tpr&amp;pid='.$pid.'&amp;my_post_key='.$mybb->post_code.'&amp;rating=';
 		$tu_img = '<a href="'.$url'1" class="tpr_thumb tu_nr" title="'.$lang->tpr_rate_up.'" onclick="return thumbRate(1,'.$pid.');" ></a>';
 		$td_img = '<a href="'.$url'-1" class="tpr_thumb td_nr" title="'.$lang->tpr_rate_down.'" onclick="return thumbRate(-1,'.$pid.');" ></a>';
 	}
@@ -282,6 +282,7 @@ function tpr_action()
 {
     global $mybb, $db;
 	if($mybb->input['action'] != 'tpr') return;
+	verify_post_check($mybb->input['my_post_key']);
 
 	// TODO: post keys
     $uid = $mybb->user['uid'];

@@ -286,59 +286,27 @@ function tpr_action()
     $rating = (int)$mybb->input['rating'];
     $pid = (int)$mybb->input['pid'];
 
+	// check for invalid rating
+	if($rating != 1 && $rating != -1) return;
+	
     //User has rated, first check whether the rating is valid
 	// Check whether the user can rate
 	if(!tpr_user_can_rate($pid)) return;
 	// TODO: check forum permissions too
 
 	// Check whether the user has rated
-		$rated = $db->simple_select('thumbspostrating','rating','uid='.$uid.' and pid='.$pid);
-		$count = $db->num_rows($rated);
-		$db->free_result($rated);
-		
-		if($count) return;
+	$rated = $db->simple_select('thumbspostrating','rating','uid='.$uid.' and pid='.$pid);
+	$count = $db->num_rows($rated);
+	$db->free_result($rated);
 	
-    // What to do if user rated thumbs up
-    if( $rating == 1 )
-    {
-        $insert_thumbs = array(
-            'rating' => 1,
-            'uid' => $uid,
-            'pid' => $pid
-        );
-
-        $result_initial = $post['thumbsup'];
-
-        $update_post = array(
-            'thumbsup' => ++$result_initial,
-        );
-
-        // Insert the data into database
-        $db->insert_query('thumbspostrating',$insert_thumbs);
-        $db->update_query('posts',$update_post,'pid='.$pid);
-    }
-    // What to do if user rated thumbs down
-    elseif( $rating == -1 )
-    {
-        $insert_thumbs = array(
-            'rating' => -1,
-            'uid' => $uid,
-            'pid' => $pid
-        );
-
-        $result_initial = $post['thumbsdown'];
-
-        $update_post = array(
-            'thumbsdown' => ++$result_initial,
-        );
-
-        // Insert the datas into database
-        $db->insert_query('thumbspostrating',$insert_thumbs);
-        $db->update_query('posts',$update_post,'pid='.$pid);
-    }
-    else
-    {
-        return;
-    }
+	if($count) return;
+	
+	$db->insert_query('thumbspostrating', array(
+		'rating' => $rating,
+		'uid' => $uid,
+		'pid' => $pid
+	));
+	$field = ($rating == 1 ? 'thumbsup' : 'thumbsdown');
+	$db->write_query('UPDATE '.TABLE_PREFIX.'posts SET '.$field.'='.$field.'+1 WHERE pid='.$pid);
 }
 ?>

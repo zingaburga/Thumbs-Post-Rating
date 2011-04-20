@@ -155,6 +155,45 @@ function thumbspostrating_uninstall()
 	$db->write_query('DROP TABLE IF EXISTS '.TABLE_PREFIX.'thumbspostrating');
 }
 
+// returns true if the current user ($mybb->user) has permissions to rate
+// the post (if $postuid is supplied), based on usergroup permissions
+function tpr_user_can_rate($postuid=0)
+{
+	global $mybb;
+	$user =& $mybb->user;
+	// guests can never rate
+	if(!$user['uid']) return false;
+	
+	// cache the group checking result
+	static $can_rate = null;
+	
+	if(!isset($can_rate))
+	{
+		$can_rate = false;
+		// first, gather all the groups the user is in
+		$usergroups = array();
+		if($user['additionalgroups'])
+			$usergroups = array_flip(explode(',', $user['additionalgroups']));
+		$usergroups[$user['usergroup']] = 1;
+		// next, check that the groups are allowed
+		foreach(array_map('intval', array_map('trim', explode(',',$mybb->settings['tpr_usergroups']))) as $grp)
+		{
+			if(isset($usergroups[$grp]))
+			{
+				$can_rate = true;
+				break;
+			}
+		}
+	}
+	
+	if($can_rate)
+	{
+		// check self rating perm
+		return ($postuid != $user['uid'] || $mybb->settings['tpr_selfrate'] != 1);
+	}
+	return false;
+}
+
 // Display the RATEBOX
 function tpr_box($post)
 {
@@ -164,7 +203,6 @@ function tpr_box($post)
     
     static $done_init = false;
 	static $user_rates = null;
-	static $user_can_rate = false;
 	if(!$done_init)
 	{
 		$done_init = true;
@@ -184,26 +222,10 @@ function tpr_box($post)
 			}
 		}
 		
+		// build user rating cache
 		$user_rates = array();
 		if($mybb->user['uid'])
 		{
-			// Check whether the user can rate
-			// first, gather all the groups the user is in
-			$usergroups = array();
-			if($mybb->user['additionalgroups'])
-				$usergroups = array_flip(explode(',', $mybb->user['additionalgroups']));
-			$usergroups[$mybb->user['usergroup']] = 1;
-			// next, check that the groups are allowed
-			foreach(array_map('intval', array_map('trim', explode(',',$mybb->settings['tpr_usergroups']))) as $grp)
-			{
-				if(isset($usergroups[$grp]))
-				{
-					$user_can_rate = true;
-					break;
-				}
-			}
-			
-			// build user rating cache
 			if($mybb->input['mode'] == 'threaded')
 				$query = $db->simple_select('thumbspostrating', 'rating,pid', 'uid='.$mybb->user['uid'].' AND pid='.(int)$mybb->input['pid']);
 			else
@@ -219,19 +241,11 @@ function tpr_box($post)
 		$GLOBALS['headerinclude'] .= '<script type="text/javascript" src="'.$mybb->settings['bburl'].'/jscripts/thumbspostrating.js?ver=1600"></script><link type="text/css" rel="stylesheet" href="'.$mybb->settings['bburl'].'/css/thumbspostrating.css" />';
 	}
 
-    $uid = $mybb->user['uid'];
-    $fid = $post['fid'];
-
-	$pem = $user_can_rate;
-	if ( $pem && $mybb->settings['tpr_selfrate'] == 1 && $uid == $post['uid'] )
-	{
-		$pem = false;
-	}
 	$rated_result = $user_rates[$pid];
 
 	// Make the thumb
 	// for user who cannot rate
-	if( !$pem )
+	if( !tpr_user_can_rate($post['uid']) )
 	{
 		$tu_img = '<div class="tpr_thumb tu_rd"></div>';
 		$td_img = '<div class="tpr_thumb td_ru"></div>';

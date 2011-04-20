@@ -266,14 +266,13 @@ BOX;
 function tpr_action()
 {
     global $mybb, $db, $post, $tid;
+	if($mybb->input['action'] != 'tpr') return;
 
     $uid = $mybb->user['uid'];
     $rating = (int)$mybb->input['rating'];
     $pid = (int)$mybb->input['pid'];
 
     //User has rated, first check whether the rating is valid
-    if( $mybb->input['action'] == 'tpr' )
-    {
         // Check whether the user can rate
         $gcr = explode(',',$mybb->settings['tpr_usergroups']);
 
@@ -293,10 +292,9 @@ function tpr_action()
         {
             $can_rate = false;
         }
-    }
 
     // What to do if user rated thumbs up
-    if( ($mybb->input['action'] == 'tpr') && ($rating == 1) && ($can_rate == true) )
+    if( ($rating == 1) && ($can_rate == true) )
     {
         $insert_thumbs = array(
             'rating' => 1,
@@ -315,7 +313,7 @@ function tpr_action()
         $db->update_query('posts',$update_post,'pid='.$pid);
     }
     // What to do if user rated thumbs down
-    elseif( ($mybb->input['action'] == 'tpr') && ($rating == -1) && ($can_rate == true) )
+    elseif( ($rating == -1) && ($can_rate == true) )
     {
         $insert_thumbs = array(
             'rating' => -1,

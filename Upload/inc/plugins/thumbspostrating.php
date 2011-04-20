@@ -79,7 +79,6 @@ function thumbspostrating_activate()
     find_replace_templatesets('postbit_classic','#'.preg_quote('{$post[\'message\']}').'#','<div class="float_right">{$post[\'tprdsp\']}</div>{$post[\'message\']}');
 
     $tpr_setting_group_1 = array(
-        'gid' => 'NULL',
         'name' => 'tpr_group',
         'title' => 'Thumbs Post Rating',
         'description' => $db->escape_string($lang->tpr_settings),
@@ -91,36 +90,33 @@ function thumbspostrating_activate()
     $gid = $db->insert_id();
 
     $tpr_setting_item_1 = array(
-        'sid' => 'NULL',
         'name' => 'tpr_usergroups',
         'title' => $db->escape_string($lang->tpr_usergroup),
         'description' => $db->escape_string($lang->tpr_usergroup_description),
         'optionscode' => 'text',
         'value' => '2,3,4,6',
         'disporder' => 1,
-        'gid' => intval($gid)
+        'gid' => $gid
     );
 
     $tpr_setting_item_2 = array(
-        'sid' => 'NULL',
         'name' => 'tpr_forums',
         'title' => $db->escape_string($lang->tpr_forums),
         'description' => $db->escape_string($lang->tpr_forums_description),
         'optionscode' => 'text',
         'value' => '0',
         'disporder' => 2,
-        'gid' => intval($gid)
+        'gid' => $gid
     );
 
     $tpr_setting_item_3 = array(
-        'sid' => 'NULL',
         'name' => 'tpr_selfrate',
         'title' => $db->escape_string($lang->tpr_selfrate),
         'description' => $db->escape_string($lang->tpr_selfrate_description),
         'optionscode' => 'yesno',
         'value' => '1',
         'disporder' => 3,
-        'gid' => intval($gid)
+        'gid' => $gid
     );
 
     $db->insert_query('settings',$tpr_setting_item_1);

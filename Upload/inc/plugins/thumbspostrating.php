@@ -282,9 +282,11 @@ function tpr_action()
 {
     global $mybb, $db;
 	if($mybb->input['action'] != 'tpr') return;
-	verify_post_check($mybb->input['my_post_key']);
-
-	// TODO: post keys
+	if(!verify_post_check($mybb->input['my_post_key'], true))
+	{
+		xmlhttp_error($GLOBALS['lang']->invalid_post_code);
+	}
+	
     $uid = $mybb->user['uid'];
     $rating = (int)$mybb->input['rating'];
     $pid = (int)$mybb->input['pid'];

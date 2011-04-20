@@ -164,6 +164,7 @@ function tpr_box($post)
     
     static $done_init = false;
 	static $user_rates = null;
+	static $user_can_rate = false;
 	if(!$done_init)
 	{
 		$done_init = true;
@@ -183,19 +184,33 @@ function tpr_box($post)
 			}
 		}
 		
-		// build user rating cache
 		$user_rates = array();
 		if($mybb->user['uid'])
 		{
+			// Check whether the user can rate
+			// first, gather all the groups the user is in
+			$usergroups = array();
+			if($mybb->user['additionalgroups'])
+				$usergroups = array_flip(explode(',', $mybb->user['additionalgroups']));
+			$usergroups[$mybb->user['usergroup']] = 1;
+			// next, check that the groups are allowed
+			foreach(array_map('intval', array_map('trim', explode(',',$mybb->settings['tpr_usergroups']))) as $grp)
+			{
+				if(isset($usergroups[$grp]))
+				{
+					$user_can_rate = true;
+					break;
+				}
+			}
+			
+			// build user rating cache
 			if($mybb->input['mode'] == 'threaded')
 				$query = $db->simple_select('thumbspostrating', 'rating,pid', 'uid='.$mybb->user['uid'].' AND pid='.(int)$mybb->input['pid']);
 			else
 				$query = $db->simple_select('thumbspostrating', 'rating,pid', 'uid='.$mybb->user['uid'].' AND '.$GLOBALS['pids']);
 			
 			while($ttrate = $db->fetch_array($query))
-			{
 				$user_rates[$ttrate['pid']] = $ttrate['rating'];
-			}
 			$db->free_result($query);
 		}
 		
@@ -207,17 +222,7 @@ function tpr_box($post)
     $uid = $mybb->user['uid'];
     $fid = $post['fid'];
 
-	// Check whether the user can rate
-	$gcr = explode(',',$mybb->settings['tpr_usergroups']);
-
-	for( $num=0; $num < count($gcr); $num++ )
-	{
-		if( (trim($gcr[$num]) == $mybb->usergroup['gid']) )
-		{
-			$pem = true;
-		}
-	}
-
+	$user_can_rate = $pem;
 	if ( $mybb->settings['tpr_selfrate'] == 1 )
 	{
 		if( $uid == $post['uid'] )

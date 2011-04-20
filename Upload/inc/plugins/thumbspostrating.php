@@ -155,6 +155,23 @@ function thumbspostrating_uninstall()
 	$db->write_query('DROP TABLE IF EXISTS '.TABLE_PREFIX.'thumbspostrating');
 }
 
+// returns true if ratings are enabled for this forum
+function tpr_enabled_forum($fidcheck)
+{
+	$forums =& $GLOBALS['mybb']->settings['tpr_forums'];
+	if( $forums != 0 )
+	{
+		foreach(array_map('trim', explode(',',$forums)) as $fid)
+		{
+			if( ($fid == $fidcheck) )
+			{
+				return false;
+			}
+		}
+	}
+	return true;
+}
+
 // returns true if the current user ($mybb->user) has permissions to rate
 // the post (if $postuid is supplied), based on usergroup permissions
 function tpr_user_can_rate($postuid=0)
@@ -208,18 +225,11 @@ function tpr_box($post)
 		$done_init = true;
 		
 		// Check whether the posts in the forum can be rated
-		if( $mybb->settings['tpr_forums'] != 0 )
+		if(!tpr_enabled_forum($post['fid']))
 		{
-			$fcr = ;
-			foreach(array_map('trim', explode(',',$mybb->settings['tpr_forums'])) as $fid)
-			{
-				if( ($fid == $post['fid']) )
-				{
-					global $plugins;
-					$plugins->remove_hook('postbit', 'tpr_box');
-					return;
-				}
-			}
+			global $plugins;
+			$plugins->remove_hook('postbit', 'tpr_box');
+			return;
 		}
 		
 		// build user rating cache
@@ -300,7 +310,8 @@ function tpr_action()
 	
 	$post = get_post($pid);
 	if(!$post['pid']) return;
-	// TODO: check forum permissions too
+	if(!tpr_enabled_forum($post['fid'])) return;
+	// TODO: check post visibility permissions too
 
 	// Check whether the user has rated
 	$rated = $db->simple_select('thumbspostrating','rating','uid='.$uid.' and pid='.$pid);

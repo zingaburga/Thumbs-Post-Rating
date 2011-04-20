@@ -222,13 +222,10 @@ function tpr_box($post)
     $uid = $mybb->user['uid'];
     $fid = $post['fid'];
 
-	$user_can_rate = $pem;
-	if ( $mybb->settings['tpr_selfrate'] == 1 )
+	$pem = $user_can_rate;
+	if ( $mybb->settings['tpr_selfrate'] == 1 && $uid == $post['uid'] )
 	{
-		if( $uid == $post['uid'] )
-		{
-			$pem = false;
-		}
+		$pem = false;
 	}
 
 	$rated_result = $user_rates[$pid];

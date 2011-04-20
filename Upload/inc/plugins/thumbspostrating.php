@@ -288,22 +288,15 @@ function tpr_action()
 
     //User has rated, first check whether the rating is valid
 	// Check whether the user can rate
-	$can_rate = tpr_user_can_rate($pid);
+	if(!tpr_user_can_rate($pid)) return;
 	// TODO: check forum permissions too
 
 	// Check whether the user has rated
-	if($can_rate)
-	{
-		$rated = $db->simple_select('thumbspostrating','rating','uid='.$uid.' && pid='.$pid);
+		$rated = $db->simple_select('thumbspostrating','rating','uid='.$uid.' and pid='.$pid);
 		$count = $db->num_rows($rated);
+		$db->free_result($rated);
 		
-		if( $count == 1 )
-		{
-			$can_rate = false;
-		}
-	}
-	
-	if(!$can_rate) return;
+		if($count) return;
 	
     // What to do if user rated thumbs up
     if( $rating == 1 )

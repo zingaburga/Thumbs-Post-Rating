@@ -287,21 +287,26 @@ function tpr_action()
     $pid = (int)$mybb->input['pid'];
 
     //User has rated, first check whether the rating is valid
-        // Check whether the user can rate
-		$can_rate = tpr_user_can_rate($pid);
-		// TODO: check forum permissions too
+	// Check whether the user can rate
+	$can_rate = tpr_user_can_rate($pid);
+	// TODO: check forum permissions too
 
-        // Check whether the user has rated
-        $rated = $db->simple_select('thumbspostrating','*','uid='.$uid.' && pid='.$pid);
-        $count = $db->num_rows($rated);
-
-        if( $count == 1 )
-        {
-            $can_rate = false;
-        }
-
+	// Check whether the user has rated
+	if($can_rate)
+	{
+		$rated = $db->simple_select('thumbspostrating','rating','uid='.$uid.' && pid='.$pid);
+		$count = $db->num_rows($rated);
+		
+		if( $count == 1 )
+		{
+			$can_rate = false;
+		}
+	}
+	
+	if(!$can_rate) return;
+	
     // What to do if user rated thumbs up
-    if( ($rating == 1) && ($can_rate == true) )
+    if( $rating == 1 )
     {
         $insert_thumbs = array(
             'rating' => 1,
@@ -320,7 +325,7 @@ function tpr_action()
         $db->update_query('posts',$update_post,'pid='.$pid);
     }
     // What to do if user rated thumbs down
-    elseif( ($rating == -1) && ($can_rate == true) )
+    elseif( $rating == -1 )
     {
         $insert_thumbs = array(
             'rating' => -1,

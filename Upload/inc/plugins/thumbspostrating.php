@@ -260,8 +260,9 @@ function tpr_box($post)
 	// for user who can rate
 	else
 	{
-		$tu_img = '<a href="javascript:void(0);" class="tpr_thumb tu_nr" title="'.$lang->tpr_rate_up.'" onclick="return thumbRate(1,'.$pid.');" ></a>';
-		$td_img = '<a href="javascript:void(0);" class="tpr_thumb td_nr" title="'.$lang->tpr_rate_down.'" onclick="return thumbRate(-1,'.$pid.');" ></a>';
+		$url = $mybb->settings['bburl'].'/xmlhttp.php?action=tpr&amp;pid='.$pid.'&amp;rating=';
+		$tu_img = '<a href="'.$url'1" class="tpr_thumb tu_nr" title="'.$lang->tpr_rate_up.'" onclick="return thumbRate(1,'.$pid.');" ></a>';
+		$td_img = '<a href="'.$url'-1" class="tpr_thumb td_nr" title="'.$lang->tpr_rate_down.'" onclick="return thumbRate(-1,'.$pid.');" ></a>';
 	}
 
 	// Display the rating box
@@ -282,6 +283,7 @@ function tpr_action()
     global $mybb, $db;
 	if($mybb->input['action'] != 'tpr') return;
 
+	// TODO: post keys
     $uid = $mybb->user['uid'];
     $rating = (int)$mybb->input['rating'];
     $pid = (int)$mybb->input['pid'];
@@ -292,6 +294,9 @@ function tpr_action()
     //User has rated, first check whether the rating is valid
 	// Check whether the user can rate
 	if(!tpr_user_can_rate($pid)) return;
+	
+	$post = get_post($pid);
+	if(!$post['pid']) return;
 	// TODO: check forum permissions too
 
 	// Check whether the user has rated
@@ -307,6 +312,11 @@ function tpr_action()
 	));
 	$field = ($rating == 1 ? 'thumbsup' : 'thumbsdown');
 	$db->write_query('UPDATE '.TABLE_PREFIX.'posts SET '.$field.'='.$field.'+1 WHERE pid='.$pid);
+	
+	if(!$mybb->input['ajax'])
+	{
+		header('Location: '.htmlspecialchars_decode(get_post_link($pid, $post['tid'])).'#pid'.$pid);
+	}
 }
 
 // TODO: perhaps include a rebuild thumb ratings section in ACP

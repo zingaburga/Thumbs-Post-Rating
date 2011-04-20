@@ -5,7 +5,7 @@
 
 function thumbRate(rating,pid)
 {
-    new Ajax.Request('xmlhttp.php?action=tpr&rating=' + rating + '&pid=' + pid,{onComplete:thumbResponse(rating,pid)});
+    new Ajax.Request('xmlhttp.php?action=tpr&rating=' + rating + '&pid=' + pid + "&ajax=1",{onComplete:thumbResponse(rating,pid)});
 	return false;
 }
 

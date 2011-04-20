@@ -56,7 +56,7 @@ function thumbspostrating_info()
 // Install function
 function thumbspostrating_install()
 {
-    global $db;
+    global $db, $lang;
 
     $db->write_query('ALTER TABLE '.TABLE_PREFIX.'posts ADD `thumbsup` INT NOT NULL DEFAULT 0, `thumbsdown` INT NOT NULL DEFAULT 0', true);
 	$db->write_query('CREATE TABLE IF NOT EXISTS '.TABLE_PREFIX.'thumbspostrating (
@@ -66,18 +66,8 @@ function thumbspostrating_install()
 		PRIMARY KEY ( uid, pid )
 		) ENGINE = MYISAM ;'
 	);
-}
-
-// Activate function
-function thumbspostrating_activate()
-{
-    global $db, $lang;
+	
     $lang->load('thumbspostrating');
-
-	require MYBB_ROOT.'/inc/adminfunctions_templates.php';
-    find_replace_templatesets('postbit','#'.preg_quote('<div class="post_body" id="pid_{$post[\'pid\']}">').'#','{$post[\'tprdsp\']}<div class="post_body" id="pid_{$post[\'pid\']}">');
-    find_replace_templatesets('postbit_classic','#'.preg_quote('{$post[\'message\']}').'#','{$post[\'tprdsp\']}{$post[\'message\']}');
-
     $tpr_setting_group_1 = array(
         'name' => 'tpr_group',
         'title' => 'Thumbs Post Rating',
@@ -125,18 +115,20 @@ function thumbspostrating_activate()
     rebuild_settings();
 }
 
+// Activate function
+function thumbspostrating_activate()
+{
+	require MYBB_ROOT.'/inc/adminfunctions_templates.php';
+    find_replace_templatesets('postbit','#'.preg_quote('<div class="post_body" id="pid_{$post[\'pid\']}">').'#','{$post[\'tprdsp\']}<div class="post_body" id="pid_{$post[\'pid\']}">');
+    find_replace_templatesets('postbit_classic','#'.preg_quote('{$post[\'message\']}').'#','{$post[\'tprdsp\']}{$post[\'message\']}');
+}
+
 // Deactivate function
 function thumbspostrating_deactivate()
 {
-    global $db;
-
     require MYBB_ROOT.'/inc/adminfunctions_templates.php';
     find_replace_templatesets('postbit','#'.preg_quote('{$post[\'tprdsp\']}').'#','');
     find_replace_templatesets('postbit_classic','#'.preg_quote('{$post[\'tprdsp\']}').'#','');
- 
-	$db->delete_query('settings','name IN("tpr_usergroups","tpr_forums","tpr_selfrate")');
-	$db->delete_query('settinggroups','name="tpr_group"');
-	rebuild_settings();
 }
 
 // Is Installed function
@@ -150,7 +142,11 @@ function thumbspostrating_is_installed()
 function thumbspostrating_uninstall()
 {
     global $db;
-
+	
+	$db->delete_query('settings','name IN("tpr_usergroups","tpr_forums","tpr_selfrate")');
+	$db->delete_query('settinggroups','name="tpr_group"');
+	rebuild_settings();
+	
     $db->write_query('ALTER TABLE '.TABLE_PREFIX.'posts DROP thumbsup, DROP thumbsdown', true);
 	$db->write_query('DROP TABLE IF EXISTS '.TABLE_PREFIX.'thumbspostrating');
 }

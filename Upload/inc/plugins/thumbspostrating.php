@@ -162,9 +162,12 @@ function thumbspostrating_uninstall()
 // Display the RATEBOX
 function tpr_box($post)
 {
-    global $db, $mybb, $templates, $lang, $tprdsp;
+    global $db, $mybb, $templates, $lang, $current_page, $tprdsp;
+    $pid = (int) $post['pid'];
+	if(!$pid || $current_page != 'showthread.php') return; // paranoia
     
     static $done_init = false;
+	static $user_rates = null;
 	if(!$done_init)
 	{
 		$done_init = true;
@@ -184,12 +187,27 @@ function tpr_box($post)
 			}
 		}
 		
+		// build user rating cache
+		$user_rates = array();
+		if($mybb->user['uid'])
+		{
+			if($mybb->input['mode'] == 'threaded')
+				$query = $db->simple_select('thumbspostrating', 'rating,pid', 'uid='.$mybb->user['uid'].' AND pid='.(int)$mybb->input['pid']);
+			else
+				$query = $db->simple_select('thumbspostrating', 'rating,pid', 'uid='.$mybb->user['uid'].' AND '.$GLOBALS['pids']);
+			
+			while($ttrate = $db->fetch_array($query))
+			{
+				$user_rates[$ttrate['pid']] = $ttrate['rating'];
+			}
+			$db->free_result($query);
+		}
+		
 		$lang->load('thumbspostrating');
 		// stick in additional header stuff
 		$GLOBALS['headerinclude'] .= '<script type="text/javascript" src="'.$mybb->settings['bburl'].'/jscripts/thumbspostrating.js?ver=1600"></script><link type="text/css" rel="stylesheet" href="'.$mybb->settings['bburl'].'/css/thumbspostrating.css" />';
 	}
 
-    $pid = (int) $post['pid'];
     $uid = $mybb->user['uid'];
     $fid = $post['fid'];
 
@@ -212,31 +230,23 @@ function tpr_box($post)
 		}
 	}
 
-	// Check whether the user has rated
-	$rated  = $db->simple_select('thumbspostrating','*','uid='.$uid.' && pid='.$pid);
-	$count  = $db->num_rows($rated);
-
-	//If rated, check whether they rated thumbs up or down
-	if( $count == 1 )
-	{
-		$rated_result = $db->fetch_field($rated, 'rating');
-	}
+	$rated_result = $user_rates[$pid];
 
 	// Make the thumb
 	// for user who cannot rate
-	if( $pem !=true || $count > 1 )
+	if( $pem !=true || $rated_result )
 	{
 		$tu_img = '<div class="tpr_thumb tu_rd"></div>';
 		$td_img = '<div class="tpr_thumb td_ru"></div>';
 	}
 	// for user already rated thumb up
-	elseif( $count == 1 && $rated_result == 1 )
+	elseif( $rated_result == 1 )
 	{
 		$tu_img = '<div class="tpr_thumb tu_ru"></div>';
 		$td_img = '<div class="tpr_thumb td_ru"></div>';
 	}
 	// for user already rated thumb down
-	elseif( $count == 1 && $rated_result == -1 )
+	elseif( $rated_result == -1 )
 	{
 		$tu_img = '<div class="tpr_thumb tu_rd"></div>';
 		$td_img = '<div class="tpr_thumb td_rd"></div>';

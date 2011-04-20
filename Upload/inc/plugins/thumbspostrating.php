@@ -223,38 +223,32 @@ function tpr_box($post)
     $fid = $post['fid'];
 
 	$pem = $user_can_rate;
-	if ( $mybb->settings['tpr_selfrate'] == 1 && $uid == $post['uid'] )
+	if ( $pem && $mybb->settings['tpr_selfrate'] == 1 && $uid == $post['uid'] )
 	{
 		$pem = false;
 	}
-
 	$rated_result = $user_rates[$pid];
 
 	// Make the thumb
 	// for user who cannot rate
-	if( $pem !=true || $rated_result )
+	if( !$pem )
 	{
 		$tu_img = '<div class="tpr_thumb tu_rd"></div>';
 		$td_img = '<div class="tpr_thumb td_ru"></div>';
 	}
-	// for user already rated thumb up
-	elseif( $rated_result == 1 )
+	// for user already rated thumb
+	elseif( $rated_result )
 	{
-		$tu_img = '<div class="tpr_thumb tu_ru"></div>';
-		$td_img = '<div class="tpr_thumb td_ru"></div>';
-	}
-	// for user already rated thumb down
-	elseif( $rated_result == -1 )
-	{
-		$tu_img = '<div class="tpr_thumb tu_rd"></div>';
-		$td_img = '<div class="tpr_thumb td_rd"></div>';
+		$ud = ($rated_result == 1 ? 'u' : 'd');
+		$tu_img = '<div class="tpr_thumb tu_r'.$ud.'"></div>';
+		$td_img = '<div class="tpr_thumb td_r'.$ud.'"></div>';
 	}
 	// for user who can rate
 	else
 	{
-		$tu_img = '<a href="javascript:void(0);" class="tpr_thumb tu_nr" title="'.$lang->tpr_rate_up.'" onclick="thumbRate(1,0,'.$pid.')" ></a>';
-		$td_img = '<a href="javascript:void(0);" class="tpr_thumb td_nr" title="'.$lang->tpr_rate_down.'" onclick="thumbRate(0,1,'.$pid.')" ></a>';
-	};
+		$tu_img = '<a href="javascript:void(0);" class="tpr_thumb tu_nr" title="'.$lang->tpr_rate_up.'" onclick="return thumbRate(1,0,'.$pid.');" ></a>';
+		$td_img = '<a href="javascript:void(0);" class="tpr_thumb td_nr" title="'.$lang->tpr_rate_down.'" onclick="return thumbRate(0,1,'.$pid.');" ></a>';
+	}
 
 	// Display the rating box
 	$tu_no = $post['thumbsup'];

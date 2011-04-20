@@ -6,6 +6,7 @@
 function thumbRate(tu,td,pid)
 {
     new Ajax.Request('xmlhttp.php?action=tpr&tu=' + tu + '&td=' + td + '&pid=' + pid,{onComplete:thumbResponse(tu,td,pid)});
+	return false;
 }
 
 function thumbResponse(tu,td,pid)

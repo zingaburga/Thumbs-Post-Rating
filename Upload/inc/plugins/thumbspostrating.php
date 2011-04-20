@@ -75,7 +75,6 @@ function thumbspostrating_activate()
     $lang->load('thumbspostrating');
 
 	require MYBB_ROOT.'/inc/adminfunctions_templates.php';
-    find_replace_templatesets('headerinclude','#'.preg_quote('{$stylesheets}').'#','<script type="text/javascript" src="{$mybb->settings[\'bburl\']}/jscripts/thumbspostrating.js?ver=1600"></script><link type="text/css" rel="stylesheet" href="{$mybb->settings[\'bburl\']}/css/thumbspostrating.css" />{$stylesheets}');
     find_replace_templatesets('postbit','#'.preg_quote('<div class="post_body" id="pid_{$post[\'pid\']}">').'#','<div class="float_right">{$post[\'tprdsp\']}</div><div class="post_body" id="pid_{$post[\'pid\']}">');
     find_replace_templatesets('postbit_classic','#'.preg_quote('{$post[\'message\']}').'#','<div class="float_right">{$post[\'tprdsp\']}</div>{$post[\'message\']}');
 
@@ -136,7 +135,6 @@ function thumbspostrating_deactivate()
     global $db;
 
     require MYBB_ROOT.'/inc/adminfunctions_templates.php';
-	find_replace_templatesets('headerinclude','#'.preg_quote('<script type="text/javascript" src="{$mybb->settings[\'bburl\']}/jscripts/thumbspostrating.js?ver=1600"></script><link type="text/css" rel="stylesheet" href="{$mybb->settings[\'bburl\']}/css/thumbspostrating.css" />').'#','');
     find_replace_templatesets('postbit','#'.preg_quote('<div class="float_right">{$post[\'tprdsp\']}</div>').'#','');
     find_replace_templatesets('postbit_classic','#'.preg_quote('<div class="float_right">{$post[\'tprdsp\']}</div>').'#','');
  
@@ -185,85 +183,87 @@ function tpr_box($post)
 				}
 			}
 		}
-
+		
 		$lang->load('thumbspostrating');
+		// stick in additional header stuff
+		$GLOBALS['headerinclude'] .= '<script type="text/javascript" src="'.$mybb->settings['bburl'].'/jscripts/thumbspostrating.js?ver=1600"></script><link type="text/css" rel="stylesheet" href="'.$mybb->settings['bburl'].'/css/thumbspostrating.css" />';
 	}
 
     $pid = (int) $post['pid'];
     $uid = $mybb->user['uid'];
     $fid = $post['fid'];
 
-        // Check whether the user can rate
-        $gcr = explode(',',$mybb->settings['tpr_usergroups']);
+	// Check whether the user can rate
+	$gcr = explode(',',$mybb->settings['tpr_usergroups']);
 
-        for( $num=0; $num < count($gcr); $num++ )
-        {
-            if( (trim($gcr[$num]) == $mybb->usergroup['gid']) )
-            {
-                $pem = true;
-            }
-        }
+	for( $num=0; $num < count($gcr); $num++ )
+	{
+		if( (trim($gcr[$num]) == $mybb->usergroup['gid']) )
+		{
+			$pem = true;
+		}
+	}
 
-        if ( $mybb->settings['tpr_selfrate'] == 1 )
-        {
-            if( $uid == $post['uid'] )
-            {
-                $pem = false;
-            }
-        }
+	if ( $mybb->settings['tpr_selfrate'] == 1 )
+	{
+		if( $uid == $post['uid'] )
+		{
+			$pem = false;
+		}
+	}
 
-        // Check whether the user has rated
-        $rated  = $db->simple_select('thumbspostrating','*','uid='.$uid.' && pid='.$pid);
-        $count  = $db->num_rows($rated);
+	// Check whether the user has rated
+	$rated  = $db->simple_select('thumbspostrating','*','uid='.$uid.' && pid='.$pid);
+	$count  = $db->num_rows($rated);
 
-        //If rated, check whether they rated thumbs up or down
-        if( $count == 1 )
-        {
-            $rated_result = $db->fetch_field($rated, 'rating');
-        }
+	//If rated, check whether they rated thumbs up or down
+	if( $count == 1 )
+	{
+		$rated_result = $db->fetch_field($rated, 'rating');
+	}
 
-        // Make the thumb
-        // for user who cannot rate
-        if( $pem !=true || $count > 1 )
-        {
-            $tu_img = '<div class="tpr_thumb tu_rd"></div>';
-            $td_img = '<div class="tpr_thumb td_ru"></div>';
-        }
-        // for user already rated thumb up
-        elseif( $count == 1 && $rated_result == 1 )
-        {
-            $tu_img = '<div class="tpr_thumb tu_ru"></div>';
-            $td_img = '<div class="tpr_thumb td_ru"></div>';
-        }
-        // for user already rated thumb down
-        elseif( $count == 1 && $rated_result == -1 )
-        {
-            $tu_img = '<div class="tpr_thumb tu_rd"></div>';
-            $td_img = '<div class="tpr_thumb td_rd"></div>';
-        }
-        // for user who can rate
-        else
-        {
-            $tu_img = '<a href="javascript:void(0);" class="tpr_thumb tu_nr" title="'.$lang->tpr_rate_up.'" onclick="thumbRate(1,0,'.$pid.')" ></a>';
-            $td_img = '<a href="javascript:void(0);" class="tpr_thumb td_nr" title="'.$lang->tpr_rate_down.'" onclick="thumbRate(0,1,'.$pid.')" ></a>';
-        };
+	// Make the thumb
+	// for user who cannot rate
+	if( $pem !=true || $count > 1 )
+	{
+		$tu_img = '<div class="tpr_thumb tu_rd"></div>';
+		$td_img = '<div class="tpr_thumb td_ru"></div>';
+	}
+	// for user already rated thumb up
+	elseif( $count == 1 && $rated_result == 1 )
+	{
+		$tu_img = '<div class="tpr_thumb tu_ru"></div>';
+		$td_img = '<div class="tpr_thumb td_ru"></div>';
+	}
+	// for user already rated thumb down
+	elseif( $count == 1 && $rated_result == -1 )
+	{
+		$tu_img = '<div class="tpr_thumb tu_rd"></div>';
+		$td_img = '<div class="tpr_thumb td_rd"></div>';
+	}
+	// for user who can rate
+	else
+	{
+		$tu_img = '<a href="javascript:void(0);" class="tpr_thumb tu_nr" title="'.$lang->tpr_rate_up.'" onclick="thumbRate(1,0,'.$pid.')" ></a>';
+		$td_img = '<a href="javascript:void(0);" class="tpr_thumb td_nr" title="'.$lang->tpr_rate_down.'" onclick="thumbRate(0,1,'.$pid.')" ></a>';
+	};
 
-        // Display the rating box
-        $tu_no = $post['thumbsup'];
-        $td_no = $post['thumbsdown'];
+	// Display the rating box
+	$tu_no = $post['thumbsup'];
+	$td_no = $post['thumbsdown'];
 
-        $box = <<<BOX
+	$box = <<<BOX
 <table class="tpr_box" id="tpr_stat_$pid">
-    <tr>
-        <td class="tu_stat" id="tu_stat_$pid">$tu_no</td>
-        <td>$tu_img</td>
-        <td>$td_img</td>
-        <td class="td_stat" id="td_stat_$pid">$td_no</td>
-    </tr>
+<tr>
+	<td class="tu_stat" id="tu_stat_$pid">$tu_no</td>
+	<td>$tu_img</td>
+	<td>$td_img</td>
+	<td class="td_stat" id="td_stat_$pid">$td_no</td>
+</tr>
 </table>
 BOX;
 
-        $post['tprdsp'] = $box;
+	$post['tprdsp'] = $box;
 }
 
 function tpr_action()

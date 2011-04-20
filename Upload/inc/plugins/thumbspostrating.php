@@ -288,15 +288,8 @@ function tpr_action()
 
     //User has rated, first check whether the rating is valid
         // Check whether the user can rate
-        $gcr = explode(',',$mybb->settings['tpr_usergroups']);
-
-        for( $num=0; $num < count($gcr); $num++ )
-        {
-            if( (trim($gcr[$num]) == $mybb->usergroup['gid']) )
-            {
-                $can_rate = true;
-            }
-        }
+		$can_rate = tpr_user_can_rate($pid);
+		// TODO: check forum permissions too
 
         // Check whether the user has rated
         $rated = $db->simple_select('thumbspostrating','*','uid='.$uid.' && pid='.$pid);

@@ -279,7 +279,7 @@ BOX;
 
 function tpr_action()
 {
-    global $mybb, $db, $post, $tid;
+    global $mybb, $db;
 	if($mybb->input['action'] != 'tpr') return;
 
     $uid = $mybb->user['uid'];
@@ -298,10 +298,9 @@ function tpr_action()
 	$rated = $db->simple_select('thumbspostrating','rating','uid='.$uid.' and pid='.$pid);
 	$count = $db->num_rows($rated);
 	$db->free_result($rated);
-	
 	if($count) return;
 	
-	$db->insert_query('thumbspostrating', array(
+	$db->replace_query('thumbspostrating', array(
 		'rating' => $rating,
 		'uid' => $uid,
 		'pid' => $pid
@@ -309,4 +308,5 @@ function tpr_action()
 	$field = ($rating == 1 ? 'thumbsup' : 'thumbsdown');
 	$db->write_query('UPDATE '.TABLE_PREFIX.'posts SET '.$field.'='.$field.'+1 WHERE pid='.$pid);
 }
-?>
+
+// TODO: perhaps include a rebuild thumb ratings section in ACP

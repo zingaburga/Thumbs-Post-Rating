@@ -75,8 +75,8 @@ function thumbspostrating_activate()
     $lang->load('thumbspostrating');
 
 	require MYBB_ROOT.'/inc/adminfunctions_templates.php';
-    find_replace_templatesets('postbit','#'.preg_quote('<div class="post_body" id="pid_{$post[\'pid\']}">').'#','<div class="float_right">{$post[\'tprdsp\']}</div><div class="post_body" id="pid_{$post[\'pid\']}">');
-    find_replace_templatesets('postbit_classic','#'.preg_quote('{$post[\'message\']}').'#','<div class="float_right">{$post[\'tprdsp\']}</div>{$post[\'message\']}');
+    find_replace_templatesets('postbit','#'.preg_quote('<div class="post_body" id="pid_{$post[\'pid\']}">').'#','{$post[\'tprdsp\']}<div class="post_body" id="pid_{$post[\'pid\']}">');
+    find_replace_templatesets('postbit_classic','#'.preg_quote('{$post[\'message\']}').'#','{$post[\'tprdsp\']}{$post[\'message\']}');
 
     $tpr_setting_group_1 = array(
         'name' => 'tpr_group',
@@ -131,8 +131,8 @@ function thumbspostrating_deactivate()
     global $db;
 
     require MYBB_ROOT.'/inc/adminfunctions_templates.php';
-    find_replace_templatesets('postbit','#'.preg_quote('<div class="float_right">{$post[\'tprdsp\']}</div>').'#','');
-    find_replace_templatesets('postbit_classic','#'.preg_quote('<div class="float_right">{$post[\'tprdsp\']}</div>').'#','');
+    find_replace_templatesets('postbit','#'.preg_quote('{$post[\'tprdsp\']}').'#','');
+    find_replace_templatesets('postbit_classic','#'.preg_quote('{$post[\'tprdsp\']}').'#','');
  
 	$db->delete_query('settings','name IN("tpr_usergroups","tpr_forums","tpr_selfrate")');
 	$db->delete_query('settinggroups','name="tpr_group"');
@@ -277,14 +277,14 @@ function tpr_box($post)
 
 	// Display the rating box
 	$post['tprdsp'] = <<<BOX
-<table class="tpr_box" id="tpr_stat_$pid">
+<div class="float_right"><table class="tpr_box" id="tpr_stat_$pid">
 <tr>
 	<td class="tu_stat" id="tu_stat_$pid">$post[thumbsup]</td>
 	<td>$tu_img</td>
 	<td>$td_img</td>
 	<td class="td_stat" id="td_stat_$pid">$post[thumbsdown]</td>
 </tr>
-</table>
+</table></div>
 BOX;
 }
 

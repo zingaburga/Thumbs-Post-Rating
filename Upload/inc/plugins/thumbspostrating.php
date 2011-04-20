@@ -251,21 +251,16 @@ function tpr_box($post)
 	}
 
 	// Display the rating box
-	$tu_no = $post['thumbsup'];
-	$td_no = $post['thumbsdown'];
-
-	$box = <<<BOX
+	$post['tprdsp'] = <<<BOX
 <table class="tpr_box" id="tpr_stat_$pid">
 <tr>
-	<td class="tu_stat" id="tu_stat_$pid">$tu_no</td>
+	<td class="tu_stat" id="tu_stat_$pid">$post[thumbsup]</td>
 	<td>$tu_img</td>
 	<td>$td_img</td>
-	<td class="td_stat" id="td_stat_$pid">$td_no</td>
+	<td class="td_stat" id="td_stat_$pid">$post[thumbsdown]</td>
 </tr>
 </table>
 BOX;
-
-	$post['tprdsp'] = $box;
 }
 
 function tpr_action()

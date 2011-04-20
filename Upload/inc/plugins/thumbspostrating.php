@@ -246,8 +246,8 @@ function tpr_box($post)
 	// for user who can rate
 	else
 	{
-		$tu_img = '<a href="javascript:void(0);" class="tpr_thumb tu_nr" title="'.$lang->tpr_rate_up.'" onclick="return thumbRate(1,0,'.$pid.');" ></a>';
-		$td_img = '<a href="javascript:void(0);" class="tpr_thumb td_nr" title="'.$lang->tpr_rate_down.'" onclick="return thumbRate(0,1,'.$pid.');" ></a>';
+		$tu_img = '<a href="javascript:void(0);" class="tpr_thumb tu_nr" title="'.$lang->tpr_rate_up.'" onclick="return thumbRate(1,'.$pid.');" ></a>';
+		$td_img = '<a href="javascript:void(0);" class="tpr_thumb td_nr" title="'.$lang->tpr_rate_down.'" onclick="return thumbRate(-1,'.$pid.');" ></a>';
 	}
 
 	// Display the rating box
@@ -268,9 +268,8 @@ function tpr_action()
     global $mybb, $db, $post, $tid;
 
     $uid = $mybb->user['uid'];
-    $tu = $_GET['tu'];
-    $td = $_GET['td'];
-    $pid = $_GET['pid'];
+    $rating = (int)$mybb->input['rating'];
+    $pid = (int)$mybb->input['pid'];
 
     //User has rated, first check whether the rating is valid
     if( $mybb->input['action'] == 'tpr' )
@@ -297,7 +296,7 @@ function tpr_action()
     }
 
     // What to do if user rated thumbs up
-    if( ($mybb->input['action'] == 'tpr') && ($tu == 1) && ($can_rate == true) )
+    if( ($mybb->input['action'] == 'tpr') && ($rating == 1) && ($can_rate == true) )
     {
         $insert_thumbs = array(
             'rating' => 1,
@@ -316,7 +315,7 @@ function tpr_action()
         $db->update_query('posts',$update_post,'pid='.$pid);
     }
     // What to do if user rated thumbs down
-    elseif( ($mybb->input['action'] == 'tpr') && ($td == 1) && ($can_rate == true) )
+    elseif( ($mybb->input['action'] == 'tpr') && ($rating == -1) && ($can_rate == true) )
     {
         $insert_thumbs = array(
             'rating' => -1,

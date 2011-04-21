@@ -263,7 +263,7 @@ function tpr_box(&$post)
 			}
 			
 			// stick in additional header stuff
-			$GLOBALS['headerinclude'] .= '<script type="text/javascript" src="'.$mybb->settings['bburl'].'/jscripts/thumbspostrating.js?ver=1600"></script><link type="text/css" rel="stylesheet" href="'.$mybb->settings['bburl'].'/css/thumbspostrating.css" />';
+			$GLOBALS['headerinclude'] .= '<script type="text/javascript" src="'.$mybb->settings['bburl'].'/jscripts/thumbspostrating.js?ver=1600"></script><link type="text/css" rel="stylesheet" href="'.$mybb->settings['bburl'].'/images/thumbspostrating.css" />';
 			
 			// new replying implies thread isn't closed or user is moderator
 			$thread_closed = ($GLOBALS['ismod'] || $GLOBALS['thread']['closed']);

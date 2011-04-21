@@ -230,6 +230,7 @@ function tpr_box(&$post)
 	
 	static $done_init = false;
 	static $user_rates = null;
+	static $thread_closed = false; // closed thread and not moderator
 	if(!$done_init)
 	{
 		$done_init = true;
@@ -262,24 +263,27 @@ function tpr_box(&$post)
 			
 			// stick in additional header stuff
 			$GLOBALS['headerinclude'] .= '<script type="text/javascript" src="'.$mybb->settings['bburl'].'/jscripts/thumbspostrating.js?ver=1600"></script><link type="text/css" rel="stylesheet" href="'.$mybb->settings['bburl'].'/css/thumbspostrating.css" />';
+			
+			// new replying implies thread isn't closed or user is moderator
+			$thread_closed = ($GLOBALS['ismod'] || $GLOBALS['thread']['closed']);
 		}
 		
 		$lang->load('thumbspostrating');
 	}
 	
 	// Make the thumb
-	// for user who cannot rate
-	if( !tpr_user_can_rate($post['uid']) )
-	{
-		$tu_img = '<div class="tpr_thumb tu_rd"></div>';
-		$td_img = '<div class="tpr_thumb td_ru"></div>';
-	}
 	// for user already rated thumb
-	elseif( $user_rates[$pid] )
+	if( $user_rates[$pid] )
 	{
 		$ud = ($user_rates[$pid] == 1 ? 'u' : 'd');
 		$tu_img = '<div class="tpr_thumb tu_r'.$ud.'"></div>';
 		$td_img = '<div class="tpr_thumb td_r'.$ud.'"></div>';
+	}
+	// for user who cannot rate
+	elseif( !tpr_user_can_rate($post['uid']) || $thread_closed )
+	{
+		$tu_img = '<div class="tpr_thumb tu_rd"></div>';
+		$td_img = '<div class="tpr_thumb td_ru"></div>';
 	}
 	// for user who can rate
 	else

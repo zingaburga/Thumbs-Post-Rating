@@ -15,3 +15,5 @@ $l['setting_tpr_forums'] = 'Forums';
 $l['setting_tpr_forums_desc'] = 'Forums to be excluded to have the post rating function. 0 means all forums can use the rating function.<br />Note: You will need to enter the sub-forum id as well.';
 $l['setting_tpr_selfrate'] = 'Disable self-rating';
 $l['setting_tpr_selfrate_desc'] = 'By disabling self-rating, user may not rate their own post.';
+$l['setting_tpr_updaterate'] = 'Enable rating changes';
+$l['setting_tpr_updaterate_desc'] = 'If enabled, users will be able to change their rating after they have rated a post.';

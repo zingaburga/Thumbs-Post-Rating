@@ -11,7 +11,6 @@ function thumbRate(rating,pid)
 	var ud = (rating == 1 ? 'u':'d');
 	x[1].innerHTML = '<div class="tpr_thumb tu_r'+ud+'"></div>';
 	x[2].innerHTML = '<div class="tpr_thumb td_r'+ud+'"></div>';
-	
 	return false;
 }
 
@@ -21,7 +20,7 @@ function thumbResponse(request)
 		alert("An error occurred when rating the post.\n\n" + error[1]);
 	else
 	{
-		response = request.responseText.split('/');
+		response = request.responseText.split('||');
 		if(response[0] != 'success')
 			alert("An unknown error occurred when rating the post.");
 		else
@@ -29,6 +28,7 @@ function thumbResponse(request)
 			var x = document.getElementById('tpr_stat_' + parseInt(response[1])).rows[0].cells;
 			x[0].innerHTML = parseInt(response[2]); // up
 			x[3].innerHTML = parseInt(response[3]); // down
+			if(response[4]) eval(response[4]);
 		}
 	}
 }

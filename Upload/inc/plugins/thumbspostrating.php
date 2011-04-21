@@ -88,6 +88,7 @@ function thumbspostrating_install()
 		'usergroups' => array('text', '2,3,4,6'),
 		'forums'     => array('text', '0'),
 		'selfrate'   => array('yesno', 1),
+		'updaterate' => array('yesno', 0),
 	) as $name => $opts) {
 		$lang_title = 'setting_tpr_'.$name;
 		$lang_desc = 'setting_tpr_'.$name.'_desc';
@@ -271,6 +272,8 @@ function tpr_box(&$post)
 		$lang->load('thumbspostrating');
 	}
 	
+	$cantrate = ($thread_closed || !tpr_user_can_rate($post['uid']));
+	$url = $mybb->settings['bburl'].'/xmlhttp.php?action=tpr&amp;pid='.$pid.'&amp;my_post_key='.$mybb->post_code.'&amp;rating=';
 	// Make the thumb
 	// for user already rated thumb
 	if( $user_rates[$pid] )
@@ -278,9 +281,17 @@ function tpr_box(&$post)
 		$ud = ($user_rates[$pid] == 1 ? 'u' : 'd');
 		$tu_img = '<div class="tpr_thumb tu_r'.$ud.'"></div>';
 		$td_img = '<div class="tpr_thumb td_r'.$ud.'"></div>';
+		if($mybb->settings['tpr_updaterate'] == 1 && !$cantrate)
+		{
+			// allow rating the opposite one
+			if($user_rates[$pid] == 1)
+				$td_img = '<a href="'.$url.'-1" class="tpr_thumb td_nr" title="'.$lang->tpr_rate_down.'" onclick="return thumbRate(-1,'.$pid.');"></a>';
+			else
+				$tu_img = '<a href="'.$url.'1" class="tpr_thumb tu_nr" title="'.$lang->tpr_rate_up.'" onclick="return thumbRate(1,'.$pid.');"></a>';
+		}
 	}
 	// for user who cannot rate
-	elseif( !tpr_user_can_rate($post['uid']) || $thread_closed )
+	elseif( $cantrate )
 	{
 		$tu_img = '<div class="tpr_thumb tu_rd"></div>';
 		$td_img = '<div class="tpr_thumb td_ru"></div>';
@@ -288,15 +299,14 @@ function tpr_box(&$post)
 	// for user who can rate
 	else
 	{
-		$url = $mybb->settings['bburl'].'/xmlhttp.php?action=tpr&amp;pid='.$pid.'&amp;my_post_key='.$mybb->post_code.'&amp;rating=';
 		$tu_img = '<a href="'.$url.'1" class="tpr_thumb tu_nr" title="'.$lang->tpr_rate_up.'" onclick="return thumbRate(1,'.$pid.');"></a>';
 		$td_img = '<a href="'.$url.'-1" class="tpr_thumb td_nr" title="'.$lang->tpr_rate_down.'" onclick="return thumbRate(-1,'.$pid.');"></a>';
-		// eh, like who turns it off?
-		if($mybb->settings['use_xmlhttprequest'] == 0)
-		{
-			$tu_img = str_replace('onclick="return thumbRate', 'rel="', $tu_img);
-			$td_img = str_replace('onclick="return thumbRate', 'rel="', $td_img);
-		}
+	}
+	// respect MyBB's wish to disable xmlhttp (eh, like who turns it off?)
+	if(!$cantrate && $mybb->settings['use_xmlhttprequest'] == 0)
+	{
+		$tu_img = str_replace('onclick="return thumbRate', 'rel="', $tu_img);
+		$td_img = str_replace('onclick="return thumbRate', 'rel="', $td_img);
 	}
 	
 	$post['thumbsup'] = (int)$post['thumbsup'];
@@ -340,9 +350,10 @@ function tpr_action()
 	if($thread['closed'] && !$ismod) xmlhttp_error($lang->tpr_error_cannot_rate);
 	
 	// Check whether the user has rated
-	$rated = $db->simple_select('thumbspostrating','rating','uid='.$uid.' and pid='.$pid);
-	if($db->num_rows($rated)) xmlhttp_error($lang->tpr_error_already_rated);
-	$db->free_result($rated);
+	$rated = $db->fetch_field($db->simple_select('thumbspostrating','rating','uid='.$uid.' and pid='.$pid), 'rating');
+	if(($mybb->settings['tpr_updaterate'] == 1 && $rated == $rating)
+	|| ($mybb->settings['tpr_updaterate'] != 1 && $rated))
+		xmlhttp_error($lang->tpr_error_already_rated);
 	
 	$db->replace_query('thumbspostrating', array(
 		'rating' => $rating,
@@ -350,8 +361,15 @@ function tpr_action()
 		'pid' => $pid
 	));
 	$field = ($rating == 1 ? 'thumbsup' : 'thumbsdown');
-	$db->write_query('UPDATE '.TABLE_PREFIX.'posts SET '.$field.'='.$field.'+1 WHERE pid='.$pid);
 	++$post[$field];
+	$qryappend = '';
+	if($rated)
+	{
+		$oldfield = ($rating =! 1 ? 'thumbsup' : 'thumbsdown');
+		--$post[$oldfield];
+		$qryappend = ', '.$oldfield.'=IF('.$oldfield.'>0,'.$oldfield.'-1,0)';
+	}
+	$db->write_query('UPDATE '.TABLE_PREFIX.'posts SET '.$field.'='.$field.'+1'.$qryappend.' WHERE pid='.$pid);
 	
 	if(!$mybb->input['ajax'])
 	{
@@ -360,7 +378,15 @@ function tpr_action()
 	else
 	{
 		// push new values to client
-		echo 'success/', $post['pid'], '/', (int)$post['thumbsup'], '/', (int)$post['thumbsdown'];
+		echo 'success||', $post['pid'], '||', (int)$post['thumbsup'], '||', (int)$post['thumbsdown'];
+		if($mybb->settings['tpr_updaterate'] == 1) {
+			$url = $mybb->settings['bburl'].'/xmlhttp.php?action=tpr&amp;pid='.$post['pid'].'&amp;my_post_key='.$mybb->post_code.'&amp;rating=';
+			// allow rating the opposite one
+			if($rating == 1)
+				echo '||x[2].innerHTML = \'<a href="'.$url.'-1" class="tpr_thumb td_nr" title="'.$lang->tpr_rate_down.'" onclick="return thumbRate(-1,'.$post['pid'].');"></a>\';';
+			else
+				echo '||x[1].innerHTML = \'<a href="'.$url.'1" class="tpr_thumb tu_nr" title="'.$lang->tpr_rate_up.'" onclick="return thumbRate(1,'.$post['pid'].');"></a>\';';
+		}
 	}
 	// TODO: for non-AJAX, it makes more sense to go through global.php
 }
@@ -392,4 +418,3 @@ function tpr_deletethread2($tid)
 // also won't worry about deleting on post pruning - MyBB thinks it's great to duplicate code and offer no plugin hooks there; practically every plugin which tries to cleanup on delete is gonna get f*ck'd over by that anyway
 
 // TODO: perhaps include a rebuild thumb ratings section in ACP
-// TODO: provide ability for users to change ratings?

@@ -271,7 +271,7 @@ function tpr_box(&$post)
 			$GLOBALS['headerinclude'] .= '<script type="text/javascript" src="'.$mybb->settings['bburl'].'/jscripts/thumbspostrating.js?ver=1600"></script><link type="text/css" rel="stylesheet" href="'.$mybb->settings['bburl'].'/images/thumbspostrating.css" />';
 			
 			// new replying implies thread isn't closed or user is moderator
-			$thread_closed = ($GLOBALS['ismod'] || $GLOBALS['thread']['closed']);
+			$thread_closed = (!$GLOBALS['ismod'] && $GLOBALS['thread']['closed']);
 		}
 		
 		$lang->load('thumbspostrating');
@@ -370,7 +370,7 @@ function tpr_action()
 	$qryappend = '';
 	if($rated)
 	{
-		$oldfield = ($rating =! 1 ? 'thumbsup' : 'thumbsdown');
+		$oldfield = ($rating != 1 ? 'thumbsup' : 'thumbsdown');
 		--$post[$oldfield];
 		$qryappend = ', '.$oldfield.'=IF('.$oldfield.'>0,'.$oldfield.'-1,0)';
 	}

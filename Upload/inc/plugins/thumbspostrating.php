@@ -28,7 +28,7 @@
 // No direct initiation
 if( !defined('IN_MYBB') )
 {
-    die('Direct initialization of this file is not allowed.');
+	die('Direct initialization of this file is not allowed.');
 }
 
 // Add hooks
@@ -38,46 +38,46 @@ $plugins->add_hook('global_start','tpr_global');
 // Plugin information
 function thumbspostrating_info()
 {
-   global $lang;
-   $lang->load('thumbspostrating');
-
-   return array(
-        'name' => $lang->tpr_info_name,
-        'description' => $lang->tpr_info_description,
-        'website' => 'http://community.mybb.com/thread-84250.html',
-        'author' => 'TY Yew',
-        'authorsite' => 'http://www.tyyew.com/mybb',
-        'version' => '1.2',
-        'guid' => '21de27b859c0095ec17f86f561fa3737',
-        'compatibility' => '14*,15*,16*'
-   );
+	global $lang;
+	$lang->load('thumbspostrating');
+	
+	return array(
+		'name' => $lang->tpr_info_name,
+		'description' => $lang->tpr_info_description,
+		'website' => 'http://community.mybb.com/thread-84250.html',
+		'author' => 'TY Yew',
+		'authorsite' => 'http://www.tyyew.com/mybb',
+		'version' => '1.2',
+		'guid' => '21de27b859c0095ec17f86f561fa3737',
+		'compatibility' => '14*,15*,16*'
+	);
 }
 
 // Install function
 function thumbspostrating_install()
 {
-    global $db, $lang;
-
-    $db->write_query('ALTER TABLE '.TABLE_PREFIX.'posts ADD `thumbsup` INT NOT NULL DEFAULT 0, `thumbsdown` INT NOT NULL DEFAULT 0', true);
+	global $db, $lang;
+	
+	$db->write_query('ALTER TABLE '.TABLE_PREFIX.'posts ADD `thumbsup` INT NOT NULL DEFAULT 0, `thumbsdown` INT NOT NULL DEFAULT 0', true);
 	$db->write_query('CREATE TABLE IF NOT EXISTS '.TABLE_PREFIX.'thumbspostrating (
-        uid INT NOT NULL ,
-        pid INT NOT NULL ,
-        rating SMALLINT NOT NULL ,
+		uid INT NOT NULL ,
+		pid INT NOT NULL ,
+		rating SMALLINT NOT NULL ,
 		PRIMARY KEY ( uid, pid )
 		) ENGINE = MYISAM ;'
 	);
 	
-    $lang->load('thumbspostrating');
-    $tpr_setting_group_1 = array(
-        'name' => 'tpr_group',
-        'title' => $db->escape_string($lang->setting_group_tpr_group),
-        'description' => $db->escape_string($lang->setting_group_tpr_group_desc),
-        'disporder' => '38',
-        'isdefault' => 'no'
-    );
-    $db->insert_query('settinggroups',$tpr_setting_group_1);
-    $gid = $db->insert_id();
-
+	$lang->load('thumbspostrating');
+	$tpr_setting_group_1 = array(
+		'name' => 'tpr_group',
+		'title' => $db->escape_string($lang->setting_group_tpr_group),
+		'description' => $db->escape_string($lang->setting_group_tpr_group_desc),
+		'disporder' => '38',
+		'isdefault' => 'no'
+	);
+	$db->insert_query('settinggroups',$tpr_setting_group_1);
+	$gid = $db->insert_id();
+	
 	$disporder = 0;
 	foreach(array(
 		'usergroups' => array('text', '2,3,4,6'),
@@ -117,29 +117,29 @@ function thumbspostrating_install()
 function thumbspostrating_activate()
 {
 	require MYBB_ROOT.'/inc/adminfunctions_templates.php';
-    find_replace_templatesets('postbit','#'.preg_quote('<div class="post_body" id="pid_{$post[\'pid\']}">').'#','{$post[\'tprdsp\']}<div class="post_body" id="pid_{$post[\'pid\']}">');
-    find_replace_templatesets('postbit_classic','#'.preg_quote('{$post[\'message\']}').'#','{$post[\'tprdsp\']}{$post[\'message\']}');
+	find_replace_templatesets('postbit','#'.preg_quote('<div class="post_body" id="pid_{$post[\'pid\']}">').'#','{$post[\'tprdsp\']}<div class="post_body" id="pid_{$post[\'pid\']}">');
+	find_replace_templatesets('postbit_classic','#'.preg_quote('{$post[\'message\']}').'#','{$post[\'tprdsp\']}{$post[\'message\']}');
 }
 
 // Deactivate function
 function thumbspostrating_deactivate()
 {
-    require MYBB_ROOT.'/inc/adminfunctions_templates.php';
-    find_replace_templatesets('postbit','#'.preg_quote('{$post[\'tprdsp\']}').'#','');
-    find_replace_templatesets('postbit_classic','#'.preg_quote('{$post[\'tprdsp\']}').'#','');
+	require MYBB_ROOT.'/inc/adminfunctions_templates.php';
+	find_replace_templatesets('postbit','#'.preg_quote('{$post[\'tprdsp\']}').'#','');
+	find_replace_templatesets('postbit_classic','#'.preg_quote('{$post[\'tprdsp\']}').'#','');
 }
 
 // Is Installed function
 function thumbspostrating_is_installed()
 {
-    global $db;
-    return (bool) $db->table_exists('thumbspostrating');
+	global $db;
+	return (bool) $db->table_exists('thumbspostrating');
 }
 
 // Uninstall function
 function thumbspostrating_uninstall()
 {
-    global $db;
+	global $db;
 	$gid = $db->fetch_field($db->simple_select('settinggroups','gid','name="tpr_group"'), 'gid');
 	if($gid)
 	{
@@ -148,7 +148,7 @@ function thumbspostrating_uninstall()
 	}
 	rebuild_settings();
 	
-    $db->write_query('ALTER TABLE '.TABLE_PREFIX.'posts DROP thumbsup, DROP thumbsdown', true);
+	$db->write_query('ALTER TABLE '.TABLE_PREFIX.'posts DROP thumbsup, DROP thumbsdown', true);
 	$db->write_query('DROP TABLE IF EXISTS '.TABLE_PREFIX.'thumbspostrating');
 	
 	$db->delete_query('templates', 'title="postbit_tpr" AND sid=-1');
@@ -221,11 +221,11 @@ function tpr_user_can_rate($postuid=0)
 // Display the RATEBOX
 function tpr_box(&$post)
 {
-    global $db, $mybb, $templates, $lang, $current_page;
-    $pid = (int) $post['pid'];
+	global $db, $mybb, $templates, $lang, $current_page;
+	$pid = (int) $post['pid'];
 	if(!$pid || $current_page != 'showthread.php') return; // paranoia
-    
-    static $done_init = false;
+	
+	static $done_init = false;
 	static $user_rates = null;
 	if(!$done_init)
 	{
@@ -257,9 +257,9 @@ function tpr_box(&$post)
 		// stick in additional header stuff
 		$GLOBALS['headerinclude'] .= '<script type="text/javascript" src="'.$mybb->settings['bburl'].'/jscripts/thumbspostrating.js?ver=1600"></script><link type="text/css" rel="stylesheet" href="'.$mybb->settings['bburl'].'/css/thumbspostrating.css" />';
 	}
-
+	
 	$rated_result = $user_rates[$pid];
-
+	
 	// Make the thumb
 	// for user who cannot rate
 	if( !tpr_user_can_rate($post['uid']) )
@@ -287,29 +287,27 @@ function tpr_box(&$post)
 			$td_img = str_replace('onclick="return thumbRate', 'rel="', $td_img);
 		}
 	}
-
+	
 	// Display the rating box
 	eval('$post[\'tprdsp\'] = "'.$templates->get('postbit_tpr').'";');
 }
 
 function tpr_action()
 {
-    global $mybb, $db, $lang;
+	global $mybb, $db, $lang;
 	if($mybb->input['action'] != 'tpr') return;
 	if(!verify_post_check($mybb->input['my_post_key'], true))
-	{
 		xmlhttp_error($lang->invalid_post_code);
-	}
 	
-    $uid = $mybb->user['uid'];
-    $rating = (int)$mybb->input['rating'];
-    $pid = (int)$mybb->input['pid'];
+	$uid = $mybb->user['uid'];
+	$rating = (int)$mybb->input['rating'];
+	$pid = (int)$mybb->input['pid'];
 	$lang->load('thumbspostrating');
-
+	
 	// check for invalid rating
 	if($rating != 1 && $rating != -1) xmlhttp_error($lang->tpr_error_invalid_rating);
 	
-    //User has rated, first check whether the rating is valid
+	//User has rated, first check whether the rating is valid
 	// Check whether the user can rate
 	if(!tpr_user_can_rate($pid)) xmlhttp_error($lang->tpr_error_cannot_rate);
 	
@@ -317,12 +315,11 @@ function tpr_action()
 	if(!$post['pid']) xmlhttp_error($lang->post_doesnt_exist);
 	if(!tpr_enabled_forum($post['fid'])) xmlhttp_error($lang->tpr_error_cannot_rate);
 	// TODO: check post visibility permissions too
-
+	
 	// Check whether the user has rated
 	$rated = $db->simple_select('thumbspostrating','rating','uid='.$uid.' and pid='.$pid);
-	$count = $db->num_rows($rated);
+	if($db->num_rows($rated)) xmlhttp_error($lang->tpr_error_already_rated);
 	$db->free_result($rated);
-	if($count) xmlhttp_error($lang->tpr_error_already_rated);
 	
 	$db->replace_query('thumbspostrating', array(
 		'rating' => $rating,
@@ -339,3 +336,4 @@ function tpr_action()
 }
 
 // TODO: perhaps include a rebuild thumb ratings section in ACP
+// TODO: provide ability for users to change ratings?

@@ -70,49 +70,33 @@ function thumbspostrating_install()
     $lang->load('thumbspostrating');
     $tpr_setting_group_1 = array(
         'name' => 'tpr_group',
-        'title' => 'Thumbs Post Rating',
-        'description' => $db->escape_string($lang->tpr_settings),
+        'title' => $db->escape_string($lang->setting_group_tpr),
+        'description' => $db->escape_string($lang->setting_group_tpr_desc),
         'disporder' => '38',
         'isdefault' => 'no'
     );
-
     $db->insert_query('settinggroups',$tpr_setting_group_1);
     $gid = $db->insert_id();
 
-    $tpr_setting_item_1 = array(
-        'name' => 'tpr_usergroups',
-        'title' => $db->escape_string($lang->tpr_usergroup),
-        'description' => $db->escape_string($lang->tpr_usergroup_description),
-        'optionscode' => 'text',
-        'value' => '2,3,4,6',
-        'disporder' => 1,
-        'gid' => $gid
-    );
-
-    $tpr_setting_item_2 = array(
-        'name' => 'tpr_forums',
-        'title' => $db->escape_string($lang->tpr_forums),
-        'description' => $db->escape_string($lang->tpr_forums_description),
-        'optionscode' => 'text',
-        'value' => '0',
-        'disporder' => 2,
-        'gid' => $gid
-    );
-
-    $tpr_setting_item_3 = array(
-        'name' => 'tpr_selfrate',
-        'title' => $db->escape_string($lang->tpr_selfrate),
-        'description' => $db->escape_string($lang->tpr_selfrate_description),
-        'optionscode' => 'yesno',
-        'value' => '1',
-        'disporder' => 3,
-        'gid' => $gid
-    );
-
-    $db->insert_query('settings',$tpr_setting_item_1);
-    $db->insert_query('settings',$tpr_setting_item_2);
-    $db->insert_query('settings',$tpr_setting_item_3);
-    rebuild_settings();
+	$disporder = 0;
+	foreach(array(
+		'usergroups' => array('text', '2,3,4,6'),
+		'forums'     => array('text', '0'),
+		'selfrate'   => array('yesno', 1),
+	) as $name => $opts) {
+		$lang_title = 'setting_tpr_'.$name;
+		$lang_desc = 'setting_tpr_'.$name.'_desc';
+		$db->insert_query('settings', array(
+			'name'        => 'tpr_'.$name,
+			'title'       => $db->escape_string($lang->$lang_title),
+			'description' => $db->escape_string($lang->$lang_desc),
+			'optionscode' => $opts[0],
+			'value'       => $db->escape_string($opts[1]),
+			'disporder'   => ++$disporder,
+			'gid'         => $gid,
+		));
+	}
+	rebuild_settings();
 	
 	$db->insert_query('templates', array(
 		'title' => 'postbit_tpr',
@@ -183,7 +167,7 @@ function tpr_enabled_forum($fidcheck)
 	{
 		foreach(array_map('trim', explode(',',$forums)) as $fid)
 		{
-			if( ($fid == $fidcheck) )
+			if( $fid == $fidcheck )
 			{
 				return false;
 			}

@@ -35,6 +35,9 @@ if( !defined('IN_MYBB') )
 $plugins->add_hook('xmlhttp','tpr_action');
 $plugins->add_hook('global_start','tpr_global');
 $plugins->add_hook('postbit','tpr_box');
+$plugins->add_hook('class_moderation_delete_post','tpr_deletepost');
+$plugins->add_hook('class_moderation_delete_thread_start','tpr_deletethread');
+$plugins->add_hook('class_moderation_delete_thread','tpr_deletethread2');
 
 // Plugin information
 function thumbspostrating_info()
@@ -64,7 +67,8 @@ function thumbspostrating_install()
 		uid INT UNSIGNED NOT NULL ,
 		pid INT UNSIGNED NOT NULL ,
 		rating SMALLINT NOT NULL ,
-		PRIMARY KEY ( uid, pid )
+		PRIMARY KEY ( uid, pid ),
+		KEY ( pid )
 		) ENGINE = MYISAM ;'
 	);
 	
@@ -348,6 +352,31 @@ function tpr_action()
 	// TODO: for non-AJAX, it makes more sense to go through global.php
 }
 
+function tpr_deletepost($pid)
+{
+	global $db;
+	$db->delete_query('thumbspostrating', 'pid='.$pid);
+}
+function tpr_deletethread($tid)
+{
+	global $db, $tpr_pids;
+	// grab pids, but only delete later
+	$tpr_pids = '';
+	$query = $db->simple_select('posts', 'pid', 'tid='.$tid);
+	while($pid = $db->fetch_field($query, 'pid'))
+		$tpr_pids .= ($tpr_pids ? ',':'') . $pid;
+	$db->free_result($query);
+}
+function tpr_deletethread2($tid)
+{
+	global $tpr_pids, $db;
+	if(!$tpr_pids) return;
+	
+	$db->delete_query('thumbspostrating', 'pid IN ('.$tpr_pids.')');
+	$tpr_pids = ''; // stop us trying to redelete if this hook happens to be called again
+}
+// we won't bother with delete forum handling; MyBB doesn't even bother to clear out attachments, reported posts etc (plus it sucks to have to find all posts in it anyway)
+// also won't worry about deleting on post pruning - MyBB thinks it's great to duplicate code and offer no plugin hooks there; practically every plugin which tries to cleanup on delete is gonna get f*ck'd over by that anyway
+
 // TODO: perhaps include a rebuild thumb ratings section in ACP
-// TODO: delete ratings when delete post/thread/forum
 // TODO: provide ability for users to change ratings?

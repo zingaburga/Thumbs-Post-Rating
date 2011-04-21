@@ -70,8 +70,8 @@ function thumbspostrating_install()
     $lang->load('thumbspostrating');
     $tpr_setting_group_1 = array(
         'name' => 'tpr_group',
-        'title' => $db->escape_string($lang->setting_group_tpr),
-        'description' => $db->escape_string($lang->setting_group_tpr_desc),
+        'title' => $db->escape_string($lang->setting_group_tpr_group),
+        'description' => $db->escape_string($lang->setting_group_tpr_group_desc),
         'disporder' => '38',
         'isdefault' => 'no'
     );
@@ -140,9 +140,12 @@ function thumbspostrating_is_installed()
 function thumbspostrating_uninstall()
 {
     global $db;
-	
-	$db->delete_query('settings','name IN("tpr_usergroups","tpr_forums","tpr_selfrate")');
-	$db->delete_query('settinggroups','name="tpr_group"');
+	$gid = $db->fetch_field($db->simple_select('settinggroups','gid','name="tpr_group"'), 'gid');
+	if($gid)
+	{
+		$db->delete_query('settings', 'gid='.$gid);
+		$db->delete_query('settinggroups', 'gid='.$gid);
+	}
 	rebuild_settings();
 	
     $db->write_query('ALTER TABLE '.TABLE_PREFIX.'posts DROP thumbsup, DROP thumbsdown', true);
@@ -336,4 +339,3 @@ function tpr_action()
 }
 
 // TODO: perhaps include a rebuild thumb ratings section in ACP
-// TODOs: fixup settings insertion

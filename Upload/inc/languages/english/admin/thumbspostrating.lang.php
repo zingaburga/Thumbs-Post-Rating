@@ -7,8 +7,8 @@
 $l['tpr_info_name'] = 'Thumbs Post Rating';
 $l['tpr_info_description'] = 'Add a thumbs up/thumbs down rating system on every individual post.';
 
-$l['setting_group_tpr'] = 'Thumbs Post Rating';
-$l['setting_group_tpr_desc'] = 'Settings for the Thumbs Post Rating plugin.';
+$l['setting_group_tpr_group'] = 'Thumbs Post Rating';
+$l['setting_group_tpr_group_desc'] = 'Settings for the Thumbs Post Rating plugin.';
 $l['setting_tpr_usergroups'] = 'Usergroups';
 $l['setting_tpr_usergroups_desc'] = 'Usergroups who allowed to rate the post.';
 $l['setting_tpr_forums'] = 'Forums';

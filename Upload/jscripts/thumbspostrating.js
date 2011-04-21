@@ -21,7 +21,7 @@ function thumbResponse(request)
 		alert("An error occurred when rating the post.\n\n" + error[1]);
 	else
 	{
-		response = request.split('/');
+		response = request.responseText.split('/');
 		if(response[0] != 'success')
 			alert("An unknown error occurred when rating the post.");
 		else

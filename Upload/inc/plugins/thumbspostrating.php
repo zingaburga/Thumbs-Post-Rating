@@ -58,7 +58,7 @@ function thumbspostrating_install()
 {
 	global $db, $lang;
 	
-	$db->write_query('ALTER TABLE '.TABLE_PREFIX.'posts ADD `thumbsup` INT NOT NULL DEFAULT 0, `thumbsdown` INT NOT NULL DEFAULT 0', true);
+	$db->write_query('ALTER TABLE '.TABLE_PREFIX.'posts ADD `thumbsup` INT NOT NULL DEFAULT 0, ADD `thumbsdown` INT NOT NULL DEFAULT 0', true);
 	$db->write_query('CREATE TABLE IF NOT EXISTS '.TABLE_PREFIX.'thumbspostrating (
 		uid INT NOT NULL ,
 		pid INT NOT NULL ,
@@ -278,8 +278,8 @@ function tpr_box(&$post)
 	else
 	{
 		$url = $mybb->settings['bburl'].'/xmlhttp.php?action=tpr&amp;pid='.$pid.'&amp;my_post_key='.$mybb->post_code.'&amp;rating=';
-		$tu_img = '<a href="'.$url'1" class="tpr_thumb tu_nr" title="'.$lang->tpr_rate_up.'" onclick="return thumbRate(1,'.$pid.');"></a>';
-		$td_img = '<a href="'.$url'-1" class="tpr_thumb td_nr" title="'.$lang->tpr_rate_down.'" onclick="return thumbRate(-1,'.$pid.');"></a>';
+		$tu_img = '<a href="'.$url.'1" class="tpr_thumb tu_nr" title="'.$lang->tpr_rate_up.'" onclick="return thumbRate(1,'.$pid.');"></a>';
+		$td_img = '<a href="'.$url.'-1" class="tpr_thumb td_nr" title="'.$lang->tpr_rate_down.'" onclick="return thumbRate(-1,'.$pid.');"></a>';
 		// eh, like who turns it off?
 		if($mybb->settings['use_xmlhttprequest'] == 0)
 		{
@@ -287,6 +287,9 @@ function tpr_box(&$post)
 			$td_img = str_replace('onclick="return thumbRate', 'rel="', $td_img);
 		}
 	}
+	
+	$post['thumbsup'] = (int)$post['thumbsup'];
+	$post['thumbsdown'] = (int)$post['thumbsdown'];
 	
 	// Display the rating box
 	eval('$post[\'tprdsp\'] = "'.$templates->get('postbit_tpr').'";');
@@ -337,10 +340,11 @@ function tpr_action()
 	else
 	{
 		// push new values to client
-		echo 'success/', $post['pid'], '/', $post['thumbsup'], '/', $post['thumbdown'];
+		echo 'success/', $post['pid'], '/', (int)$post['thumbsup'], '/', (int)$post['thumbsdown'];
 	}
 	// TODO: for non-AJAX, it makes more sense to go through global.php
 }
 
 // TODO: perhaps include a rebuild thumb ratings section in ACP
+// TODO: delete ratings when delete post/thread/forum
 // TODO: provide ability for users to change ratings?

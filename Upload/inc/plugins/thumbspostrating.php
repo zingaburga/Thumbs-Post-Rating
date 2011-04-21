@@ -197,19 +197,24 @@ function tpr_user_can_rate($postuid=0)
 	
 	if(!isset($can_rate))
 	{
-		$can_rate = false;
-		// first, gather all the groups the user is in
-		$usergroups = array();
-		if($user['additionalgroups'])
-			$usergroups = array_flip(explode(',', $user['additionalgroups']));
-		$usergroups[$user['usergroup']] = 1;
-		// next, check that the groups are allowed
-		foreach(array_map('intval', array_map('trim', explode(',',$mybb->settings['tpr_usergroups']))) as $grp)
+		if($mybb->settings['tpr_usergroups'] == 0)
+			$can_rate = true;
+		else
 		{
-			if(isset($usergroups[$grp]))
+			$can_rate = false;
+			// first, gather all the groups the user is in
+			$usergroups = array();
+			if($user['additionalgroups'])
+				$usergroups = array_flip(explode(',', $user['additionalgroups']));
+			$usergroups[$user['usergroup']] = 1;
+			// next, check that the groups are allowed
+			foreach(array_map('intval', array_map('trim', explode(',',$mybb->settings['tpr_usergroups']))) as $grp)
 			{
-				$can_rate = true;
-				break;
+				if(isset($usergroups[$grp]))
+				{
+					$can_rate = true;
+					break;
+				}
 			}
 		}
 	}

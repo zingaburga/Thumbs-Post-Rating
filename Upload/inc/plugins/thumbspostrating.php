@@ -34,6 +34,7 @@ if( !defined('IN_MYBB') )
 // Add hooks
 $plugins->add_hook('xmlhttp','tpr_action');
 $plugins->add_hook('global_start','tpr_global');
+$plugins->add_hook('postbit','tpr_box');
 
 // Plugin information
 function thumbspostrating_info()
@@ -157,9 +158,7 @@ function thumbspostrating_uninstall()
 function tpr_global()
 {
 	if($GLOBALS['current_page'] != 'showthread.php') return;
-	global $plugins, $templatelist;
-	$plugins->add_hook('postbit','tpr_box');
-	$templatelist .= ',postbit_tpr';
+	$GLOBALS['templatelist'] .= ',postbit_tpr';
 }
 
 // returns true if ratings are enabled for this forum
@@ -223,7 +222,7 @@ function tpr_box(&$post)
 {
 	global $db, $mybb, $templates, $lang, $current_page;
 	$pid = (int) $post['pid'];
-	if(!$pid || $current_page != 'showthread.php') return; // paranoia
+	if(!$pid) return; // paranoia
 	
 	static $done_init = false;
 	static $user_rates = null;
@@ -241,24 +240,28 @@ function tpr_box(&$post)
 		
 		// build user rating cache
 		$user_rates = array();
-		if($mybb->user['uid'])
+		if($current_page == 'showthread.php')
 		{
-			if($mybb->input['mode'] == 'threaded')
-				$query = $db->simple_select('thumbspostrating', 'rating,pid', 'uid='.$mybb->user['uid'].' AND pid='.(int)$mybb->input['pid']);
-			else
-				$query = $db->simple_select('thumbspostrating', 'rating,pid', 'uid='.$mybb->user['uid'].' AND '.$GLOBALS['pids']);
+			// tricky little optimisation :P
+			// - on AJAX new reply, it's impossible for this post to have been rated, therefore, we don't need to build a cache at all
+			if($mybb->user['uid'])
+			{
+				if($mybb->input['mode'] == 'threaded')
+					$query = $db->simple_select('thumbspostrating', 'rating,pid', 'uid='.$mybb->user['uid'].' AND pid='.(int)$mybb->input['pid']);
+				else
+					$query = $db->simple_select('thumbspostrating', 'rating,pid', 'uid='.$mybb->user['uid'].' AND '.$GLOBALS['pids']);
+				
+				while($ttrate = $db->fetch_array($query))
+					$user_rates[$ttrate['pid']] = $ttrate['rating'];
+				$db->free_result($query);
+			}
 			
-			while($ttrate = $db->fetch_array($query))
-				$user_rates[$ttrate['pid']] = $ttrate['rating'];
-			$db->free_result($query);
+			// stick in additional header stuff
+			$GLOBALS['headerinclude'] .= '<script type="text/javascript" src="'.$mybb->settings['bburl'].'/jscripts/thumbspostrating.js?ver=1600"></script><link type="text/css" rel="stylesheet" href="'.$mybb->settings['bburl'].'/css/thumbspostrating.css" />';
 		}
 		
 		$lang->load('thumbspostrating');
-		// stick in additional header stuff
-		$GLOBALS['headerinclude'] .= '<script type="text/javascript" src="'.$mybb->settings['bburl'].'/jscripts/thumbspostrating.js?ver=1600"></script><link type="text/css" rel="stylesheet" href="'.$mybb->settings['bburl'].'/css/thumbspostrating.css" />';
 	}
-	
-	$rated_result = $user_rates[$pid];
 	
 	// Make the thumb
 	// for user who cannot rate
@@ -268,9 +271,9 @@ function tpr_box(&$post)
 		$td_img = '<div class="tpr_thumb td_ru"></div>';
 	}
 	// for user already rated thumb
-	elseif( $rated_result )
+	elseif( $user_rates[$pid] )
 	{
-		$ud = ($rated_result == 1 ? 'u' : 'd');
+		$ud = ($user_rates[$pid] == 1 ? 'u' : 'd');
 		$tu_img = '<div class="tpr_thumb tu_r'.$ud.'"></div>';
 		$td_img = '<div class="tpr_thumb td_r'.$ud.'"></div>';
 	}

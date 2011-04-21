@@ -210,7 +210,7 @@ function tpr_user_can_rate($postuid=0)
 // Display the RATEBOX
 function tpr_box($post)
 {
-    global $db, $mybb, $templates, $lang, $current_page, $tprdsp;
+    global $db, $mybb, $templates, $lang, $current_page;
     $pid = (int) $post['pid'];
 	if(!$pid || $current_page != 'showthread.php') return; // paranoia
     
@@ -286,34 +286,35 @@ BOX;
 
 function tpr_action()
 {
-    global $mybb, $db;
+    global $mybb, $db, $lang;
 	if($mybb->input['action'] != 'tpr') return;
 	if(!verify_post_check($mybb->input['my_post_key'], true))
 	{
-		xmlhttp_error($GLOBALS['lang']->invalid_post_code);
+		xmlhttp_error($lang->invalid_post_code);
 	}
 	
     $uid = $mybb->user['uid'];
     $rating = (int)$mybb->input['rating'];
     $pid = (int)$mybb->input['pid'];
+	$lang->load('thumbspostrating');
 
 	// check for invalid rating
-	if($rating != 1 && $rating != -1) return;
+	if($rating != 1 && $rating != -1) xmlhttp_error($lang->tpr_error_invalid_rating);
 	
     //User has rated, first check whether the rating is valid
 	// Check whether the user can rate
-	if(!tpr_user_can_rate($pid)) return;
+	if(!tpr_user_can_rate($pid)) xmlhttp_error($lang->tpr_error_cannot_rate);
 	
 	$post = get_post($pid);
-	if(!$post['pid']) return;
-	if(!tpr_enabled_forum($post['fid'])) return;
+	if(!$post['pid']) xmlhttp_error($lang->post_doesnt_exist);
+	if(!tpr_enabled_forum($post['fid'])) xmlhttp_error($lang->tpr_error_cannot_rate);
 	// TODO: check post visibility permissions too
 
 	// Check whether the user has rated
 	$rated = $db->simple_select('thumbspostrating','rating','uid='.$uid.' and pid='.$pid);
 	$count = $db->num_rows($rated);
 	$db->free_result($rated);
-	if($count) return;
+	if($count) xmlhttp_error($lang->tpr_error_already_rated);
 	
 	$db->replace_query('thumbspostrating', array(
 		'rating' => $rating,
@@ -330,3 +331,4 @@ function tpr_action()
 }
 
 // TODO: perhaps include a rebuild thumb ratings section in ACP
+// TODOs: fixup settings insertion, respect mybb's AJAX enable setting, change mybb compatibility, put "box" code into a new template?

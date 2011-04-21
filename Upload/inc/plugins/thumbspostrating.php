@@ -32,8 +32,8 @@ if( !defined('IN_MYBB') )
 }
 
 // Add hooks
-$plugins->add_hook('postbit','tpr_box');
 $plugins->add_hook('xmlhttp','tpr_action');
+$plugins->add_hook('global_start','tpr_global');
 
 // Plugin information
 function thumbspostrating_info()
@@ -165,6 +165,14 @@ function thumbspostrating_uninstall()
 	$db->write_query('DROP TABLE IF EXISTS '.TABLE_PREFIX.'thumbspostrating');
 	
 	$db->delete_query('templates', 'title="postbit_tpr" AND sid=-1');
+}
+
+function tpr_global()
+{
+	if($GLOBALS['current_page'] != 'showthread.php') return;
+	global $plugins, $templatelist;
+	$plugins->add_hook('postbit','tpr_box');
+	$templatelist .= ',postbit_tpr';
 }
 
 // returns true if ratings are enabled for this forum

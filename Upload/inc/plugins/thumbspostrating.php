@@ -328,7 +328,16 @@ function tpr_action()
 	$post = get_post($pid);
 	if(!$post['pid']) xmlhttp_error($lang->post_doesnt_exist);
 	if(!tpr_enabled_forum($post['fid'])) xmlhttp_error($lang->tpr_error_cannot_rate);
-	// TODO: check post visibility permissions too
+	
+	// permissions checking
+	$forumpermissions = forum_permissions($post['fid']);
+	if($forumpermissions['canview'] != 1 || $forumpermissions['canviewthreads'] != 1) xmlhttp_error($lang->post_doesnt_exist);
+	$thread = get_thread($post['tid']);
+	if($forumpermissions['canonlyviewownthreads'] == 1 && $thread['uid'] != $mybb->user['uid']) xmlhttp_error($lang->post_doesnt_exist);
+	$ismod = is_moderator($post['fid']);
+	if(($thread['visible'] != 1 || $post['visible'] != 1) && !$ismod) xmlhttp_error($lang->post_doesnt_exist);
+	// ... we'll assume the thread belongs to a valid forum
+	if($thread['closed'] && !$ismod) xmlhttp_error($lang->tpr_error_cannot_rate);
 	
 	// Check whether the user has rated
 	$rated = $db->simple_select('thumbspostrating','rating','uid='.$uid.' and pid='.$pid);

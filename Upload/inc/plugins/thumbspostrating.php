@@ -328,11 +328,18 @@ function tpr_action()
 	));
 	$field = ($rating == 1 ? 'thumbsup' : 'thumbsdown');
 	$db->write_query('UPDATE '.TABLE_PREFIX.'posts SET '.$field.'='.$field.'+1 WHERE pid='.$pid);
+	++$post[$field];
 	
 	if(!$mybb->input['ajax'])
 	{
 		header('Location: '.htmlspecialchars_decode(get_post_link($pid, $post['tid'])).'#pid'.$pid);
 	}
+	else
+	{
+		// push new values to client
+		echo 'success/', $post['pid'], '/', $post['thumbsup'], '/', $post['thumbdown'];
+	}
+	// TODO: for non-AJAX, it makes more sense to go through global.php
 }
 
 // TODO: perhaps include a rebuild thumb ratings section in ACP

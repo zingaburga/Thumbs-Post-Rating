@@ -113,6 +113,20 @@ function thumbspostrating_install()
     $db->insert_query('settings',$tpr_setting_item_2);
     $db->insert_query('settings',$tpr_setting_item_3);
     rebuild_settings();
+	
+	$db->insert_query('templates', array(
+		'title' => 'postbit_tpr',
+		'template' => $db->escape_string('<div class="float_right"><table class="tpr_box" id="tpr_stat_{$post[\'pid\']}">
+<tr>
+	<td class="tu_stat" id="tu_stat_{$post[\'pid\']}">{$post[\'thumbsup\']}</td>
+	<td>{$tu_img}</td>
+	<td>{$td_img}</td>
+	<td class="td_stat" id="td_stat_{$post[\'pid\']}">{$post[\'thumbsdown\']}</td>
+</tr>
+</table></div>'),
+		'sid' => -1,
+		'version' => 1600
+	));
 }
 
 // Activate function
@@ -149,6 +163,8 @@ function thumbspostrating_uninstall()
 	
     $db->write_query('ALTER TABLE '.TABLE_PREFIX.'posts DROP thumbsup, DROP thumbsdown', true);
 	$db->write_query('DROP TABLE IF EXISTS '.TABLE_PREFIX.'thumbspostrating');
+	
+	$db->delete_query('templates', 'title="postbit_tpr" AND sid=-1');
 }
 
 // returns true if ratings are enabled for this forum
@@ -208,7 +224,7 @@ function tpr_user_can_rate($postuid=0)
 }
 
 // Display the RATEBOX
-function tpr_box($post)
+function tpr_box(&$post)
 {
     global $db, $mybb, $templates, $lang, $current_page;
     $pid = (int) $post['pid'];
@@ -267,21 +283,12 @@ function tpr_box($post)
 	else
 	{
 		$url = $mybb->settings['bburl'].'/xmlhttp.php?action=tpr&amp;pid='.$pid.'&amp;my_post_key='.$mybb->post_code.'&amp;rating=';
-		$tu_img = '<a href="'.$url'1" class="tpr_thumb tu_nr" title="'.$lang->tpr_rate_up.'" onclick="return thumbRate(1,'.$pid.');" ></a>';
-		$td_img = '<a href="'.$url'-1" class="tpr_thumb td_nr" title="'.$lang->tpr_rate_down.'" onclick="return thumbRate(-1,'.$pid.');" ></a>';
+		$tu_img = '<a href="'.$url'1" class="tpr_thumb tu_nr" title="'.$lang->tpr_rate_up.'" onclick="return thumbRate(1,'.$pid.');"></a>';
+		$td_img = '<a href="'.$url'-1" class="tpr_thumb td_nr" title="'.$lang->tpr_rate_down.'" onclick="return thumbRate(-1,'.$pid.');"></a>';
 	}
 
 	// Display the rating box
-	$post['tprdsp'] = <<<BOX
-<div class="float_right"><table class="tpr_box" id="tpr_stat_$pid">
-<tr>
-	<td class="tu_stat" id="tu_stat_$pid">$post[thumbsup]</td>
-	<td>$tu_img</td>
-	<td>$td_img</td>
-	<td class="td_stat" id="td_stat_$pid">$post[thumbsdown]</td>
-</tr>
-</table></div>
-BOX;
+	eval('$post[\'tprdsp\'] = "'.$templates->get('postbit_tpr').'";');
 }
 
 function tpr_action()
@@ -331,4 +338,4 @@ function tpr_action()
 }
 
 // TODO: perhaps include a rebuild thumb ratings section in ACP
-// TODOs: fixup settings insertion, respect mybb's AJAX enable setting, change mybb compatibility, put "box" code into a new template?
+// TODOs: fixup settings insertion, respect mybb's AJAX enable setting, change mybb compatibility

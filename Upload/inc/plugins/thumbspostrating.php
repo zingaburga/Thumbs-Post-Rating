@@ -49,7 +49,7 @@ function thumbspostrating_info()
         'authorsite' => 'http://www.tyyew.com/mybb',
         'version' => '1.2',
         'guid' => '21de27b859c0095ec17f86f561fa3737',
-        'compatibility' => '16*'
+        'compatibility' => '14*,15*,16*'
    );
 }
 
@@ -293,6 +293,12 @@ function tpr_box(&$post)
 		$url = $mybb->settings['bburl'].'/xmlhttp.php?action=tpr&amp;pid='.$pid.'&amp;my_post_key='.$mybb->post_code.'&amp;rating=';
 		$tu_img = '<a href="'.$url'1" class="tpr_thumb tu_nr" title="'.$lang->tpr_rate_up.'" onclick="return thumbRate(1,'.$pid.');"></a>';
 		$td_img = '<a href="'.$url'-1" class="tpr_thumb td_nr" title="'.$lang->tpr_rate_down.'" onclick="return thumbRate(-1,'.$pid.');"></a>';
+		// eh, like who turns it off?
+		if($mybb->settings['use_xmlhttprequest'] == 0)
+		{
+			$tu_img = str_replace('onclick="return thumbRate', 'rel="', $tu_img);
+			$td_img = str_replace('onclick="return thumbRate', 'rel="', $td_img);
+		}
 	}
 
 	// Display the rating box
@@ -346,4 +352,4 @@ function tpr_action()
 }
 
 // TODO: perhaps include a rebuild thumb ratings section in ACP
-// TODOs: fixup settings insertion, respect mybb's AJAX enable setting, change mybb compatibility
+// TODOs: fixup settings insertion

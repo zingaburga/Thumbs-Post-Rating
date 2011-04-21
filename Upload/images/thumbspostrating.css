@@ -26,18 +26,19 @@
 }
 .tu_ru, .tu_nr:hover
 {
-    background: url(../images/tpr_up.png) no-repeat 0 0;
+    background: url(./thumbs.png) no-repeat 0 0;
     background-position: 0 -16px;
 }
 .td_ru, .td_nr
 {
-    background: url(../images/tpr_down.png) no-repeat 0 0;
+    background: url(./thumbs.png) no-repeat 0 0;
+    background-position: -15px 0;
 }
 .tu_rd, .tu_nr
 {
-    background: url(../images/tpr_up.png) no-repeat 0 0;
+    background: url(./thumbs.png) no-repeat 0 0;
 }
 .td_rd, .td_nr:hover {
-    background: url(../images/tpr_down.png) no-repeat 0 0;
-    background-position: 0 -16px;
+    background: url(./thumbs.png) no-repeat 0 0;
+    background-position: -15px -16px;
 }

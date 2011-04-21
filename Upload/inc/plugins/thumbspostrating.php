@@ -62,6 +62,9 @@ function thumbspostrating_install()
 {
 	global $db, $lang;
 	
+	// adding column to posts table can be slow on large forums
+	@ignore_user_abort(true);
+	@set_time_limit(600);
 	$db->write_query('ALTER TABLE '.TABLE_PREFIX.'posts ADD `thumbsup` INT UNSIGNED NOT NULL DEFAULT 0, ADD `thumbsdown` INT UNSIGNED NOT NULL DEFAULT 0', true);
 	$db->write_query('CREATE TABLE IF NOT EXISTS '.TABLE_PREFIX.'thumbspostrating (
 		uid INT UNSIGNED NOT NULL ,
@@ -154,6 +157,8 @@ function thumbspostrating_uninstall()
 	}
 	rebuild_settings();
 	
+	@ignore_user_abort(true);
+	@set_time_limit(600);
 	$db->write_query('ALTER TABLE '.TABLE_PREFIX.'posts DROP thumbsup, DROP thumbsdown', true);
 	$db->write_query('DROP TABLE IF EXISTS '.TABLE_PREFIX.'thumbspostrating');
 	

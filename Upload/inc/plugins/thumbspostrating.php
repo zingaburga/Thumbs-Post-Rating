@@ -59,10 +59,10 @@ function thumbspostrating_install()
 {
 	global $db, $lang;
 	
-	$db->write_query('ALTER TABLE '.TABLE_PREFIX.'posts ADD `thumbsup` INT NOT NULL DEFAULT 0, ADD `thumbsdown` INT NOT NULL DEFAULT 0', true);
+	$db->write_query('ALTER TABLE '.TABLE_PREFIX.'posts ADD `thumbsup` INT UNSIGNED NOT NULL DEFAULT 0, ADD `thumbsdown` INT UNSIGNED NOT NULL DEFAULT 0', true);
 	$db->write_query('CREATE TABLE IF NOT EXISTS '.TABLE_PREFIX.'thumbspostrating (
-		uid INT NOT NULL ,
-		pid INT NOT NULL ,
+		uid INT UNSIGNED NOT NULL ,
+		pid INT UNSIGNED NOT NULL ,
 		rating SMALLINT NOT NULL ,
 		PRIMARY KEY ( uid, pid )
 		) ENGINE = MYISAM ;'
